@@ -2,13 +2,10 @@
 set -eu
 
 NODE_ENV="${NODE_ENV:-development}"
-DB_USER="${DB_USER:-invoice_user}"
-DB_PASSWORD="${DB_PASSWORD:-invoice_password}"
-DB_NAME="${DB_NAME:-invoice_generator}"
-DB_HOST="${DB_HOST:-mysql}"
-DB_PORT="${DB_PORT:-3306}"
 
-export DATABASE_URL="${DATABASE_URL:-mysql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}}"
+# Prisma builds the URL from the individual DB_* variables so credentials are
+# encoded safely and an invalid externally supplied DATABASE_URL is ignored.
+unset DATABASE_URL
 export AUTH_URL="${AUTH_URL:-http://localhost:3000}"
 
 npx prisma generate

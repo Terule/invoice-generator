@@ -9,9 +9,8 @@ services:
       DB_USER: ${DB_USER:-invoice_user}
       DB_PASSWORD: ${DB_PASSWORD:-change-this-password}
       DB_NAME: ${DB_NAME:-invoice_generator}
-      DB_HOST: ${DB_HOST:-mysql}
-      DB_PORT: ${DB_PORT:-3306}
-      DATABASE_URL: ${DATABASE_URL:-mysql://${DB_USER:-invoice_user}:${DB_PASSWORD:-change-this-password}@${DB_HOST:-mysql}:${DB_PORT:-3306}/${DB_NAME:-invoice_generator}}
+      DB_HOST: mysql
+      DB_PORT: "3306"
       AUTH_URL: ${AUTH_URL:-https://invoices.terule.dev.br}
       AUTH_SECRET: ${AUTH_SECRET:-replace-with-a-long-random-secret}
       AUTH_TRUST_HOST: ${AUTH_TRUST_HOST:-false}
@@ -22,6 +21,12 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:3000/api/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 45s
     restart: unless-stopped
 
   mysql:
@@ -38,6 +43,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+      start_period: 30s
     restart: unless-stopped
 
 volumes:
