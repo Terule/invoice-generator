@@ -1,6 +1,7 @@
 #!/bin/sh
 set -eu
 
+NODE_ENV="${NODE_ENV:-development}"
 DB_USER="${DB_USER:-invoice_user}"
 DB_PASSWORD="${DB_PASSWORD:-invoice_password}"
 DB_NAME="${DB_NAME:-invoice_generator}"
@@ -11,4 +12,10 @@ export DATABASE_URL="${DATABASE_URL:-mysql://${DB_USER}:${DB_PASSWORD}@${DB_HOST
 export AUTH_URL="${AUTH_URL:-http://localhost:3000}"
 
 npx prisma generate
+
+if [ "$NODE_ENV" = "production" ]; then
+	npx prisma migrate deploy
+	exec bun run start
+fi
+
 exec bun run dev
