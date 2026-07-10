@@ -2,6 +2,7 @@
 
 import {
   CalendarDays,
+  CheckCircle2,
   Download,
   FileText,
   Mail,
@@ -10,14 +11,16 @@ import {
   Trash2,
   UserCircle2
 } from "lucide-react";
-import { FormEvent, useState } from "react";
+import { type FormEvent, useState } from "react";
 
-import { SectionHeader } from "@/components/shared/section-header";
 import { InvoicePaper } from "@/components/invoices/invoice-paper";
+import { SectionHeader } from "@/components/shared/section-header";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useInvoiceBuilder } from "@/hooks/use-invoice-builder";
+import type { InvoiceForm } from "@/lib/dashboard";
 import {
   currencyOptions,
   formatCnpj,
@@ -25,8 +28,6 @@ import {
   getCurrencyOption,
   getNextInvoiceNumber
 } from "@/lib/dashboard";
-import { useInvoiceBuilder } from "@/hooks/use-invoice-builder";
-import type { InvoiceForm } from "@/lib/dashboard";
 
 export function HomePageContent() {
   const {
@@ -40,6 +41,7 @@ export function HomePageContent() {
     addLineItem,
     removeLineItem,
     updateLineItem,
+    dismissCreatedInvoice,
     createInvoiceMutation
   } =
     useInvoiceBuilder();
@@ -283,15 +285,6 @@ export function HomePageContent() {
 
           {submitError ? <p className="text-sm text-rose-300" role="alert">{submitError}</p> : null}
 
-          {createdInvoice ? (
-            <a
-              className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition hover:-translate-y-0.5 hover:bg-secondary"
-              href={`/api/invoices/${createdInvoice.id}/pdf`}
-            >
-              <Download className="h-4 w-4" />
-              Download {createdInvoice.invoiceNumber} PDF
-            </a>
-          ) : null}
         </form>
       </Card>
 
@@ -337,6 +330,32 @@ export function HomePageContent() {
           />
         </div>
       </Card>
+
+      {createdInvoice ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 p-4 backdrop-blur-sm">
+          <Card className="animate-fade-in w-full max-w-md border-white/10 text-center">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary/15 text-primary">
+              <CheckCircle2 className="h-7 w-7" />
+            </div>
+            <h2 className="mt-5 font-display text-2xl font-semibold">Invoice created</h2>
+            <p className="mt-2 text-sm leading-6 text-foreground/68">
+              {createdInvoice.invoiceNumber} is ready to download and has been saved to your invoices.
+            </p>
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
+              <a
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-soft transition hover:-translate-y-0.5 hover:opacity-90"
+                href={`/api/invoices/${createdInvoice.id}/pdf`}
+              >
+                <Download className="h-4 w-4" />
+                Download invoice
+              </a>
+              <Button onClick={dismissCreatedInvoice} type="button" variant="outline">
+                Close
+              </Button>
+            </div>
+          </Card>
+        </div>
+      ) : null}
     </section>
   );
 }

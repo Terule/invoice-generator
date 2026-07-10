@@ -5,11 +5,11 @@ import { useEffect, useMemo, useState } from "react";
 
 import { useDashboardData } from "@/components/shell/dashboard-shell";
 import {
-  createInvoiceLineItem,
   createInvoice,
-  initialInvoiceForm,
+  createInvoiceLineItem,
   type InvoiceForm,
-  type InvoiceLineItemDraft
+  type InvoiceLineItemDraft,
+  initialInvoiceForm
 } from "@/lib/dashboard";
 
 export function useInvoiceBuilder() {
@@ -57,6 +57,10 @@ export function useInvoiceBuilder() {
     }));
   }
 
+  function dismissCreatedInvoice() {
+    setCreatedInvoice(null);
+  }
+
   useEffect(() => {
     if (!selectedContractor || form.contractorMode !== "saved") {
       return;
@@ -96,6 +100,7 @@ export function useInvoiceBuilder() {
     addLineItem,
     removeLineItem,
     updateLineItem,
+    dismissCreatedInvoice,
     createInvoiceMutation
   };
 }
