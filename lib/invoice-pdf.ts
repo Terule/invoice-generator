@@ -110,6 +110,23 @@ function strokeRect(commands: string[], x: number, y: number, width: number, hei
 	commands.push(`${color} RG 0.8 w ${x} ${y} ${width} ${height} re S`);
 }
 
+function roundedRectPath(commands: string[], x: number, y: number, width: number, height: number, radius: number) {
+	const corner = radius * 0.55228475;
+	commands.push(
+		`${x + radius} ${y} m ${x + width - radius} ${y} l ${x + width - radius + corner} ${y} ${x + width} ${y + radius - corner} ${x + width} ${y + radius} c ${x + width} ${y + height - radius} l ${x + width} ${y + height - radius + corner} ${x + width - radius + corner} ${y + height} ${x + width - radius} ${y + height} c ${x + radius} ${y + height} l ${x + radius - corner} ${y + height} ${x} ${y + height - radius + corner} ${x} ${y + height - radius} c ${x} ${y + radius} l ${x} ${y + radius - corner} ${x + radius - corner} ${y} ${x + radius} ${y} c h`,
+	);
+}
+
+function fillRoundedRect(commands: string[], x: number, y: number, width: number, height: number, radius: number, color: string) {
+	roundedRectPath(commands, x, y, width, height, radius);
+	commands.push(`${color} rg f`);
+}
+
+function strokeRoundedRect(commands: string[], x: number, y: number, width: number, height: number, radius: number, color = border) {
+	roundedRectPath(commands, x, y, width, height, radius);
+	commands.push(`${color} RG 0.8 w S`);
+}
+
 function addressFromSnapshot(snapshot: Record<string, unknown>) {
 	return [
 		asString(snapshot.street),
@@ -147,7 +164,7 @@ export function createInvoicePdf(data: InvoicePdfData) {
 
 	fillRect(commands, 0, pageHeight - 7, pageWidth, 7, teal);
 
-	fillRect(commands, 32, 777, 28, 28, teal);
+	fillRoundedRect(commands, 32, 777, 28, 28, 7, teal);
 	text(commands, "T", 42, 786, 13, true, "left", "1 1 1");
 	text(commands, "INTERNATIONAL SERVICES", 68, 787, 8, true, "left", teal);
 	wrapText(companyName, 24)
@@ -163,10 +180,10 @@ export function createInvoicePdf(data: InvoicePdfData) {
 	text(commands, "Due date:", 490, 716, 9, true, "right", slate);
 	text(commands, formatDate(data.dueDate), 563, 716, 9, false, "right", slate);
 
-	fillRect(commands, 32, 536, 254, 154, "1 1 1");
-	strokeRect(commands, 32, 536, 254, 154);
-	fillRect(commands, 309, 536, 254, 154, "1 1 1");
-	strokeRect(commands, 309, 536, 254, 154);
+	fillRoundedRect(commands, 32, 536, 254, 154, 8, "1 1 1");
+	strokeRoundedRect(commands, 32, 536, 254, 154, 8);
+	fillRoundedRect(commands, 309, 536, 254, 154, 8, "1 1 1");
+	strokeRoundedRect(commands, 309, 536, 254, 154, 8);
 	text(commands, "BILL FROM - SELLER", 48, 662, 8, true, "left", teal);
 	wrapText(legalName, 29)
 		.slice(0, 2)
@@ -204,7 +221,7 @@ export function createInvoicePdf(data: InvoicePdfData) {
 	const tableLeft = 32;
 	const tableRight = 563;
 	const tableTop = 516;
-	fillRect(commands, tableLeft, tableTop - 29, tableRight - tableLeft, 29, paleBlue);
+	fillRoundedRect(commands, tableLeft, tableTop - 29, tableRight - tableLeft, 29, 7, paleBlue);
 	text(commands, "DESCRIPTION OF SERVICES", 44, tableTop - 18, 8, true, "left", "0.09 0.27 0.35");
 	text(commands, "QTY", 337, tableTop - 18, 8, true, "right", "0.09 0.27 0.35");
 	text(commands, "RATE", 438, tableTop - 18, 8, true, "right", "0.09 0.27 0.35");
@@ -226,8 +243,8 @@ export function createInvoicePdf(data: InvoicePdfData) {
 
 	const totalLeft = 338;
 	const totalBottom = rowY - 76;
-	fillRect(commands, totalLeft, totalBottom + 26, 225, 25, totalBlue);
-	strokeRect(commands, totalLeft, totalBottom + 26, 225, 25, "0.73 0.83 0.87");
+	fillRoundedRect(commands, totalLeft, totalBottom, 225, 51, 7, totalBlue);
+	strokeRoundedRect(commands, totalLeft, totalBottom, 225, 51, 7, "0.73 0.83 0.87");
 	fillRect(commands, totalLeft, totalBottom, 225, 26, teal);
 	text(commands, "Subtotal", totalLeft + 12, totalBottom + 35, 9, false, "left", slate);
 	text(commands, formatMoney(data.totalCents, data.currency), 551, totalBottom + 35, 9, false, "right", slate);
@@ -236,8 +253,8 @@ export function createInvoicePdf(data: InvoicePdfData) {
 
 	const paymentTop = totalBottom - 22;
 	const paymentBottom = Math.max(84, paymentTop - 122);
-	fillRect(commands, 32, paymentBottom, 531, paymentTop - paymentBottom, "1 1 1");
-	strokeRect(commands, 32, paymentBottom, 531, paymentTop - paymentBottom);
+	fillRoundedRect(commands, 32, paymentBottom, 531, paymentTop - paymentBottom, 8, "1 1 1");
+	strokeRoundedRect(commands, 32, paymentBottom, 531, paymentTop - paymentBottom, 8);
 	text(commands, "PAYMENT INSTRUCTIONS", 48, paymentTop - 20, 8, true, "left", teal);
 	text(commands, `Please include ${data.invoiceNumber} as your payment reference. Payment is due by ${formatDate(data.dueDate)} in ${data.currency}.`, 48, paymentTop - 39, 8.5, false, "left", slate);
 	paymentLines.slice(0, 5).forEach(([label, value], index) => {
@@ -245,11 +262,15 @@ export function createInvoicePdf(data: InvoicePdfData) {
 		text(commands, value, 103, paymentTop - 61 - index * 14, 8.5, false, "left", slate);
 	});
 	if (data.notes) {
-		text(commands, "NOTES", 48, paymentBottom - 24, 8, true, "left", teal);
+		const notesBottom = 34;
+		const notesTop = Math.max(notesBottom + 42, paymentBottom - 12);
+		fillRect(commands, 32, notesBottom, 531, notesTop - notesBottom, "0.957 0.98 0.984");
+		fillRect(commands, 32, notesBottom, 3, notesTop - notesBottom, teal);
+		text(commands, "NOTES", 48, notesTop - 14, 8, true, "left", teal);
 		wrapText(data.notes, 91)
-			.slice(0, 2)
+			.slice(0, 1)
 			.forEach((value, index) => {
-				text(commands, value, 48, paymentBottom - 40 - index * 12, 8, false, "left", slate);
+				text(commands, value, 48, notesTop - 29 - index * 12, 8, false, "left", slate);
 			});
 	}
 
