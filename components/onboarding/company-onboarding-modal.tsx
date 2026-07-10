@@ -1,10 +1,9 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
-import { Building2, CircleHelp, Landmark, MapPinned, ScanSearch } from "lucide-react";
-import { FormEvent, useState } from "react";
+import { Building2, CircleHelp, Landmark, LoaderCircle, ScanSearch } from "lucide-react";
+import { type FormEvent, useState } from "react";
 
-import type { CompanyProfileInput } from "@/lib/validations";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -19,6 +18,7 @@ import {
   lookupCnpj,
   normalizeDigits
 } from "@/lib/dashboard";
+import type { CompanyProfileInput } from "@/lib/validations";
 
 export function CompanyOnboardingModal({
   onComplete
@@ -30,6 +30,7 @@ export function CompanyOnboardingModal({
   const [companyLookupError, setCompanyLookupError] = useState("");
   const [showManualCompanyForm, setShowManualCompanyForm] = useState(false);
   const [cepLookupPending, setCepLookupPending] = useState(false);
+  const [onboardingStep, setOnboardingStep] = useState<"company" | "payment">("company");
   const [paymentError, setPaymentError] = useState("");
 
   const createCompanyMutation = useMutation({
@@ -123,7 +124,7 @@ export function CompanyOnboardingModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/85 px-4 py-8 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/85 px-4 py-8 backdrop-blur-sm">
       <div className="mx-auto max-w-3xl">
         <Card className="animate-fade-in glass-panel border-white/10">
           <div className="flex items-start justify-between gap-4">
@@ -137,16 +138,22 @@ export function CompanyOnboardingModal({
                 </p>
               </div>
               <h2 className="font-display text-3xl font-semibold">
-                Start with your CNPJ.
+                {onboardingStep === "company" ? "Start with your CNPJ." : "Add your payment details."}
               </h2>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-foreground/72">
-                We fetch your company first. If the CNPJ is not found, manual entry
-                opens and CEP can complete the address.
+                {onboardingStep === "company"
+                  ? "We fetch your company first. If the CNPJ is not found, manual entry opens and CEP can complete the address."
+                  : "Add the payment details your clients need to pay you."}
+              </p>
+              <p className="mt-4 text-xs font-medium uppercase tracking-[0.18em] text-foreground/55">
+                Step {onboardingStep === "company" ? "1 of 2: Company details" : "2 of 2: Payment details"}
               </p>
             </div>
           </div>
 
           <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+            {onboardingStep === "company" ? (
+              <>
             <div className="space-y-3">
               <Label>Tax ID / CNPJ</Label>
               <div className="flex flex-col gap-3 sm:flex-row">
@@ -158,9 +165,22 @@ export function CompanyOnboardingModal({
                     updateCompanyForm("taxId", limitDigits(event.target.value, 14))
                   }
                 />
-                <Button type="button" variant="outline" onClick={handleCompanyCnpjLookup}>
-                  <ScanSearch className="mr-2 h-4 w-4" />
-                  {companyLookupPending ? "Looking up..." : "Lookup"}
+                <Button
+                  aria-label="Look up CNPJ"
+                  className={`h-10 shrink-0 overflow-hidden transition-[width,padding] duration-300 ${companyLookupPending ? "w-10 px-0" : "w-full sm:w-28"}`}
+                  disabled={companyLookupPending}
+                  onClick={handleCompanyCnpjLookup}
+                  type="button"
+                  variant="outline"
+                >
+                  {companyLookupPending ? (
+                    <LoaderCircle aria-hidden="true" className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <>
+                      <ScanSearch aria-hidden="true" className="mr-2 h-4 w-4" />
+                      Lookup
+                    </>
+                  )}
                 </Button>
               </div>
               {companyLookupError ? (
@@ -197,9 +217,22 @@ export function CompanyOnboardingModal({
                         updateCompanyForm("cep", limitDigits(event.target.value, 8))
                       }
                     />
-                    <Button type="button" variant="outline" onClick={handleCompanyCepLookup}>
-                      <MapPinned className="mr-2 h-4 w-4" />
-                      {cepLookupPending ? "Loading..." : "Fill from CEP"}
+                    <Button
+                      aria-label="Look up CEP"
+                      className={`h-10 shrink-0 overflow-hidden transition-[width,padding] duration-300 ${cepLookupPending ? "w-10 px-0" : "w-full sm:w-28"}`}
+                      disabled={cepLookupPending}
+                      onClick={handleCompanyCepLookup}
+                      type="button"
+                      variant="outline"
+                    >
+                      {cepLookupPending ? (
+                        <LoaderCircle aria-hidden="true" className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <>
+                          <ScanSearch aria-hidden="true" className="mr-2 h-4 w-4" />
+                          Lookup
+                        </>
+                      )}
                     </Button>
                   </div>
                 </div>
@@ -231,53 +264,8 @@ export function CompanyOnboardingModal({
                   </div>
                 </div>
 
-                <div className="rounded-2xl border border-white/10 bg-secondary/35 p-4">
-                  <div className="flex items-center gap-2">
-                    <Landmark className="h-4 w-4 text-accent" />
-                    <Label>Payment details</Label>
-                  </div>
-                  <p className="mt-1 text-xs text-foreground/60">
-                    Add the details clients need to pay you. You can change these later in My Company.
-                  </p>
-                  <div className="mt-4 grid gap-4 md:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label>Beneficiary name</Label>
-                      <Input required value={companyForm.paymentBeneficiary} onChange={(event) => updateCompanyForm("paymentBeneficiary", event.target.value)} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Bank name</Label>
-                      <Input value={companyForm.paymentBankName} onChange={(event) => updateCompanyForm("paymentBankName", event.target.value)} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Account number</Label>
-                      <Input value={companyForm.paymentAccountNumber} onChange={(event) => updateCompanyForm("paymentAccountNumber", event.target.value)} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>IBAN</Label>
-                      <Input value={companyForm.paymentIban} onChange={(event) => updateCompanyForm("paymentIban", event.target.value)} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>SWIFT / BIC</Label>
-                      <Input value={companyForm.paymentSwiftBic} onChange={(event) => updateCompanyForm("paymentSwiftBic", event.target.value)} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>PIX key</Label>
-                      <Input value={companyForm.paymentPixKey} onChange={(event) => updateCompanyForm("paymentPixKey", event.target.value)} />
-                    </div>
-                    <div className="space-y-2 md:col-span-2">
-                      <Label>Additional payment instructions</Label>
-                      <textarea
-                        className="min-h-20 w-full rounded-2xl border border-border bg-secondary px-4 py-3 text-sm text-foreground outline-none transition focus:border-accent"
-                        value={companyForm.paymentInstructions}
-                        onChange={(event) => updateCompanyForm("paymentInstructions", event.target.value)}
-                      />
-                    </div>
-                  </div>
-                  {paymentError ? <p className="mt-4 text-sm text-rose-300" role="alert">{paymentError}</p> : null}
-                </div>
-
-                <Button type="submit" disabled={createCompanyMutation.isPending}>
-                  {createCompanyMutation.isPending ? "Saving..." : "Finish setup"}
+                <Button onClick={() => setOnboardingStep("payment")} type="button">
+                  Continue to payment details
                 </Button>
               </>
             ) : (
@@ -285,6 +273,61 @@ export function CompanyOnboardingModal({
                 <Building2 className="mr-2 h-4 w-4" />
                 Enter manually
               </Button>
+            )}
+              </>
+            ) : (
+              <div className="animate-fade-in rounded-2xl border border-white/10 bg-secondary/35 p-4">
+                <div className="flex items-center gap-2">
+                  <Landmark className="h-4 w-4 text-accent" />
+                  <Label>Payment details</Label>
+                </div>
+                <p className="mt-1 text-xs text-foreground/60">
+                  Add the details clients need to pay you. You can change these later in My Company.
+                </p>
+                <div className="mt-4 grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label>Beneficiary name</Label>
+                    <Input required value={companyForm.paymentBeneficiary} onChange={(event) => updateCompanyForm("paymentBeneficiary", event.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Bank name</Label>
+                    <Input value={companyForm.paymentBankName} onChange={(event) => updateCompanyForm("paymentBankName", event.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Account number</Label>
+                    <Input value={companyForm.paymentAccountNumber} onChange={(event) => updateCompanyForm("paymentAccountNumber", event.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>IBAN</Label>
+                    <Input value={companyForm.paymentIban} onChange={(event) => updateCompanyForm("paymentIban", event.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>SWIFT / BIC</Label>
+                    <Input value={companyForm.paymentSwiftBic} onChange={(event) => updateCompanyForm("paymentSwiftBic", event.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>PIX key</Label>
+                    <Input value={companyForm.paymentPixKey} onChange={(event) => updateCompanyForm("paymentPixKey", event.target.value)} />
+                  </div>
+                  <div className="space-y-2 md:col-span-2">
+                    <Label>Additional payment instructions</Label>
+                    <textarea
+                      className="min-h-20 w-full rounded-2xl border border-border bg-secondary px-4 py-3 text-sm text-foreground outline-none transition focus:border-accent"
+                      value={companyForm.paymentInstructions}
+                      onChange={(event) => updateCompanyForm("paymentInstructions", event.target.value)}
+                    />
+                  </div>
+                </div>
+                {paymentError ? <p className="mt-4 text-sm text-rose-300" role="alert">{paymentError}</p> : null}
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <Button onClick={() => setOnboardingStep("company")} type="button" variant="outline">
+                    Back to company details
+                  </Button>
+                  <Button disabled={createCompanyMutation.isPending} type="submit">
+                    {createCompanyMutation.isPending ? "Saving..." : "Finish setup"}
+                  </Button>
+                </div>
+              </div>
             )}
           </form>
         </Card>
