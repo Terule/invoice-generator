@@ -1,8 +1,6 @@
-FROM oven/bun:1.1.26-alpine
+FROM oven/bun:1.3.14-alpine
 
 WORKDIR /app
-
-RUN apk add --no-cache nodejs npm
 
 COPY package.json bun.lock ./
 RUN bun install
