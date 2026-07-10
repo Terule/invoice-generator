@@ -10,6 +10,7 @@ RUN bun install
 COPY . .
 
 RUN npx prisma generate
+RUN AUTH_SECRET=build-time-secret-please-change-at-runtime-123456 AUTH_URL=https://invoices.terule.dev.br bun run build
 
 EXPOSE 3000
 
