@@ -28,14 +28,20 @@ export function LoginScreen() {
 							Secure invoicing workspace
 						</p>
 					</div>
-					<h1 className="animate-fade-in-up stagger-1 max-w-4xl font-display text-4xl font-semibold leading-[0.98] text-white sm:text-6xl lg:text-7xl">
+					<div className="animate-fade-in-up stagger-1 mb-7 inline-flex items-center gap-3 rounded-2xl border border-white/15 bg-white/[0.04] px-4 py-3 shadow-[0_0_45px_rgba(56,189,248,0.2)] backdrop-blur-sm">
+						<div className="h-2.5 w-2.5 animate-pulse rounded-full bg-accent" />
+						<p className="font-display text-xl font-semibold tracking-[0.14em] text-white sm:text-2xl">
+							Invoice Manager
+						</p>
+					</div>
+					<h1 className="animate-fade-in-up stagger-2 max-w-4xl font-display text-4xl font-semibold leading-[0.98] text-white sm:text-6xl lg:text-7xl">
 						Build and send clean contractor invoices from one place.
 					</h1>
-					<p className="animate-fade-in-up stagger-2 mt-8 max-w-3xl text-lg leading-8 text-white/86">
+					<p className="animate-fade-in-up stagger-3 mt-8 max-w-3xl text-lg leading-8 text-white/86">
 						Sign in with Google, configure your Brazilian company once, and
 						draft GBP invoices with live previews and immutable issued records.
 					</p>
-					<div className="animate-fade-in-up stagger-3 mt-10 flex flex-wrap gap-3">
+					<div className="animate-fade-in-up stagger-4 mt-10 flex flex-wrap gap-3">
 						<Button
 							className="animate-pulse-glow gap-3 bg-white px-5 py-3 font-display text-base font-semibold text-slate-950 hover:bg-white/92"
 							onClick={() => signIn("google")}
@@ -44,7 +50,7 @@ export function LoginScreen() {
 							Continue with Google
 						</Button>
 					</div>
-					<div className="animate-fade-in-up stagger-4 mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-white/70">
+					<div className="animate-fade-in-up stagger-5 mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-white/70">
 						<Link className="transition hover:text-white" href="/tos">
 							Terms of Service
 						</Link>
@@ -61,14 +67,6 @@ export function LoginScreen() {
 				</div>
 
 				<Card className="animate-fade-in-up stagger-2 space-y-5 self-start">
-					<div>
-						<p className="font-display text-2xl font-semibold text-foreground">
-							Invoce Manager
-						</p>
-						<p className="mt-1 text-sm text-foreground/72">
-							International invoices for your freelance business.
-						</p>
-					</div>
 					<div className="flex items-center gap-3">
 						<div className="animate-gentle-float rounded-2xl bg-secondary p-3">
 							<FileText className="h-6 w-6 text-accent" />
