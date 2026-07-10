@@ -1,5 +1,11 @@
 FROM oven/bun:1.3.14-alpine
 
+# bun:1.3.14-alpine uses Alpine 3.20+ which provides Node.js 20.
+# Node.js is required by Next.js webpack for PostCSS plugin resolution (tailwindcss etc.)
+# and by Prisma 7 which requires Node 20.19+, 22.12+, or 24+.
+# npm is NOT installed — bun handles all package management.
+RUN apk add --no-cache nodejs
+
 WORKDIR /app
 
 COPY package.json bun.lock ./
