@@ -12,19 +12,18 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-import { authClient } from "@/lib/auth-client";
 import { GoogleLogo } from "@/components/auth/google-logo";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { authClient } from "@/lib/auth-client";
 
 export function LoginScreen() {
 	return (
 		<main className="min-h-screen bg-background px-6 py-10">
 			<section className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[1.2fr_0.8fr]">
-				<div className="animate-fade-in-up rounded-[36px] border border-white/12 bg-[radial-gradient(circle_at_top_left,_rgba(249,115,22,0.22),_transparent_34%),linear-gradient(140deg,#101722,#122133_52%,#15392c)] p-8 text-white shadow-soft sm:p-12">
-					{/* App name — first element, h1, most prominent */}
+				<div className="animate-fade-in-up rounded-[36px] border border-white/12 bg-[radial-gradient(circle_at_top_left,rgba(249,115,22,0.22),transparent_34%),linear-gradient(140deg,#101722,#122133_52%,#15392c)] p-8 text-white shadow-soft sm:p-12">
 					<div className="animate-fade-in-up mb-5 flex items-center gap-4">
-						<div className="animate-gentle-float shrink-0 rounded-2xl border border-white/15 bg-white/[0.06] p-3 shadow-[0_0_32px_rgba(56,189,248,0.18)] backdrop-blur-sm">
+						<div className="animate-gentle-float shrink-0 rounded-2xl border border-white/15 bg-white/6 p-3 shadow-[0_0_32px_rgba(56,189,248,0.18)] backdrop-blur-sm">
 							<FileText className="h-7 w-7 text-accent" />
 						</div>
 						<h1 className="font-display text-3xl font-bold tracking-tight text-white sm:text-4xl">
@@ -56,11 +55,11 @@ export function LoginScreen() {
 						<Button
 							className="animate-pulse-glow gap-3 bg-white px-5 py-3 font-display text-base font-semibold text-slate-950 hover:bg-white/92"
 							onClick={() =>
-						authClient.signIn.social({
-							provider: "google",
-							callbackURL: "/",
-						})
-					}
+								authClient.signIn.social({
+									provider: "google",
+									callbackURL: "/",
+								})
+							}
 						>
 							<GoogleLogo />
 							Continue with Google
