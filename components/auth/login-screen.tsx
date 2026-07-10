@@ -25,7 +25,7 @@ export function LoginScreen() {
 							<Sparkles className="h-5 w-5 text-accent" />
 						</div>
 						<p className="font-display text-sm uppercase tracking-[0.38em] text-white/70">
-							International invoices
+							Secure invoicing workspace
 						</p>
 					</div>
 					<h1 className="animate-fade-in-up stagger-1 max-w-4xl font-display text-4xl font-semibold leading-[0.98] text-white sm:text-6xl lg:text-7xl">
@@ -61,6 +61,14 @@ export function LoginScreen() {
 				</div>
 
 				<Card className="animate-fade-in-up stagger-2 space-y-5 self-start">
+					<div>
+						<p className="font-display text-2xl font-semibold text-foreground">
+							Invoce Manager
+						</p>
+						<p className="mt-1 text-sm text-foreground/72">
+							International invoices for your freelance business.
+						</p>
+					</div>
 					<div className="flex items-center gap-3">
 						<div className="animate-gentle-float rounded-2xl bg-secondary p-3">
 							<FileText className="h-6 w-6 text-accent" />
