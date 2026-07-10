@@ -3,13 +3,18 @@
 # can always resolve (avoids Bun hardlink issues on Docker overlay filesystem).
 FROM node:22-alpine
 
+# Received from Coolify during the build; npm honors this when installing.
+ARG NODE_ENV
+
 # Install latest Bun for prisma generate, next build, and the app runtime.
 RUN npm install -g bun --quiet
 
 WORKDIR /app
 
 COPY package.json ./
-RUN npm install --legacy-peer-deps
+# Coolify supplies NODE_ENV=production as a build argument. Next.js still needs
+# build-time packages such as TypeScript and the Tailwind PostCSS plugin.
+RUN npm install --include=dev --legacy-peer-deps
 
 COPY . .
 

@@ -6,6 +6,8 @@ import { prisma } from "@/lib/db/prisma";
 const isProduction = process.env.NODE_ENV === "production";
 const authSecret = process.env.AUTH_SECRET;
 const authUrl = process.env.AUTH_URL;
+const googleClientId = process.env.AUTH_GOOGLE_ID;
+const googleClientSecret = process.env.AUTH_GOOGLE_SECRET;
 const isDefaultSecret = authSecret === "replace-with-a-long-random-secret";
 
 function isLocalhostUrl(value: string) {
@@ -30,6 +32,12 @@ if (isProduction) {
 	}
 }
 
+if (!googleClientId || !googleClientSecret) {
+	throw new Error(
+		"AUTH_GOOGLE_ID and AUTH_GOOGLE_SECRET must be set to enable Google sign-in.",
+	);
+}
+
 export const auth = betterAuth({
 	database: prismaAdapter(prisma, {
 		provider: "mysql",
@@ -38,8 +46,8 @@ export const auth = betterAuth({
 	baseURL: authUrl ?? "http://localhost:3000",
 	socialProviders: {
 		google: {
-			clientId: process.env.AUTH_GOOGLE_ID!,
-			clientSecret: process.env.AUTH_GOOGLE_SECRET!,
+			clientId: googleClientId,
+			clientSecret: googleClientSecret,
 		},
 	},
 	session: {
