@@ -11,10 +11,10 @@ DB_PORT="${DB_PORT:-3306}"
 export DATABASE_URL="${DATABASE_URL:-mysql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}}"
 export AUTH_URL="${AUTH_URL:-http://localhost:3000}"
 
-bunx prisma generate
+npx prisma generate
 
 if [ "$NODE_ENV" = "production" ]; then
-	bunx prisma migrate deploy
+	npx prisma migrate deploy
 	exec bun run start
 fi
 

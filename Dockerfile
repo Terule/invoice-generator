@@ -13,7 +13,7 @@ RUN npm install --legacy-peer-deps
 
 COPY . .
 
-RUN bunx prisma generate
+RUN npx prisma generate
 RUN NEXT_TELEMETRY_DISABLED=1 AUTH_SECRET=build-time-secret-please-change-at-runtime-123456 AUTH_URL=https://invoices.terule.dev.br bun run build
 
 EXPOSE 3000
