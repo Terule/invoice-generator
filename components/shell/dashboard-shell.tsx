@@ -12,14 +12,13 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { signOut, useSession } from "next-auth/react";
 import type { ReactNode } from "react";
 import { createContext, useContext, useMemo } from "react";
-
 import { LoginScreen } from "@/components/auth/login-screen";
 import { CompanyOnboardingModal } from "@/components/onboarding/company-onboarding-modal";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { authClient } from "@/lib/auth-client";
 import { type BootstrapPayload, fetchBootstrap } from "@/lib/dashboard";
 import { cn } from "@/lib/utils";
 
@@ -50,11 +49,12 @@ const navItems = [
 export function DashboardShell({ children }: { children: ReactNode }) {
 	const pathname = usePathname();
 	const queryClient = useQueryClient();
-	const { data: session, status } = useSession();
+	const { data: session, isPending: isSessionLoading } =
+		authClient.useSession();
 	const bootstrapQuery = useQuery({
 		queryKey: ["bootstrap"],
 		queryFn: fetchBootstrap,
-		enabled: !!session,
+		enabled: !!session?.user,
 	});
 
 	const contextValue = useMemo(
@@ -69,9 +69,9 @@ export function DashboardShell({ children }: { children: ReactNode }) {
 		[bootstrapQuery.data, queryClient],
 	);
 
-	const isBootstrapLoading = Boolean(session) && bootstrapQuery.isLoading;
+	const isBootstrapLoading = Boolean(session?.user) && bootstrapQuery.isLoading;
 
-	if (status === "loading" || isBootstrapLoading) {
+	if (isSessionLoading || isBootstrapLoading) {
 		return (
 			<div className="flex min-h-screen items-center justify-center">
 				<Loader2 className="h-6 w-6 animate-spin text-primary" />
@@ -79,7 +79,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
 		);
 	}
 
-	if (!session) {
+	if (!session?.user) {
 		return <LoginScreen />;
 	}
 
@@ -88,9 +88,9 @@ export function DashboardShell({ children }: { children: ReactNode }) {
 	}
 
 	const companyProfile = bootstrapQuery.data.companyProfile;
-	const userName = session.user?.name ?? "Workspace user";
-	const userEmail = session.user?.email ?? "";
-	const userImage = session.user?.image;
+	const userName = session.user.name ?? "Workspace user";
+	const userEmail = session.user.email ?? "";
+	const userImage = session.user.image;
 	const userInitials = userName
 		.split(" ")
 		.filter(Boolean)
@@ -172,7 +172,15 @@ export function DashboardShell({ children }: { children: ReactNode }) {
 								<Button
 									aria-label="Logout"
 									className="shrink-0"
-									onClick={() => signOut({ callbackUrl: "/" })}
+									onClick={() =>
+										authClient.signOut({
+											fetchOptions: {
+												onSuccess: () => {
+													window.location.href = "/";
+												},
+											},
+										})
+									}
 									variant="ghost"
 								>
 									<LogOut className="h-4 w-4" />

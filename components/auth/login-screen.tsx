@@ -11,8 +11,8 @@ import {
 	Users,
 } from "lucide-react";
 import Link from "next/link";
-import { signIn } from "next-auth/react";
 
+import { authClient } from "@/lib/auth-client";
 import { GoogleLogo } from "@/components/auth/google-logo";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -55,7 +55,12 @@ export function LoginScreen() {
 					<div className="animate-fade-in-up stagger-4 mt-10 flex flex-wrap gap-3">
 						<Button
 							className="animate-pulse-glow gap-3 bg-white px-5 py-3 font-display text-base font-semibold text-slate-950 hover:bg-white/92"
-							onClick={() => signIn("google")}
+							onClick={() =>
+						authClient.signIn.social({
+							provider: "google",
+							callbackURL: "/",
+						})
+					}
 						>
 							<GoogleLogo />
 							Continue with Google

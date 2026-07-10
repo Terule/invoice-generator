@@ -1,17 +1,15 @@
-FROM oven/bun:1.3.14-alpine
+# Node 22 is the active LTS as of 2026. Using the official node image guarantees
+# the correct LTS version and a standard npm-managed node_modules that webpack
+# can always resolve (avoids Bun hardlink issues on Docker overlay filesystem).
+FROM node:22-alpine
 
-# bun:1.3.14-alpine uses Alpine 3.20+ which provides Node.js 20.
-# Node.js is required by Next.js webpack for PostCSS plugin resolution (tailwindcss etc.)
-# and by Prisma 7 which requires Node 20.19+, 22.12+, or 24+.
-# npm is NOT installed — bun handles all package management.
-RUN apk add --no-cache nodejs
+# Install latest Bun for prisma generate, next build, and the app runtime.
+RUN npm install -g bun --quiet
 
 WORKDIR /app
 
-COPY package.json bun.lock ./
-# NODE_ENV=development ensures devDependencies (tailwindcss, postcss, etc.) are
-# installed even when Coolify injects NODE_ENV=production as a build-arg.
-RUN NODE_ENV=development bun install
+COPY package.json ./
+RUN npm install --legacy-peer-deps
 
 COPY . .
 

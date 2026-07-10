@@ -6,14 +6,16 @@ import { AppProviders } from "@/components/providers/app-providers";
 
 import "./globals.css";
 
+// Tailwind v4 owns --font-sans and --font-display (defined in globals.css @theme).
+// Use distinct variable names here to avoid circular CSS variable references.
 const inter = Inter({
 	subsets: ["latin"],
-	variable: "--font-display",
+	variable: "--font-inter",
 });
 
 const roboto = Roboto({
 	subsets: ["latin"],
-	variable: "--font-sans",
+	variable: "--font-roboto",
 	weight: ["400", "500", "700"],
 });
 
@@ -29,7 +31,7 @@ export default function RootLayout({
 }>) {
 	return (
 		<html lang="en">
-			<body className={`${inter.variable} ${roboto.variable}`}>
+			<body className={`${inter.variable} ${roboto.variable} font-sans`}>
 				<AppProviders>{children}</AppProviders>
 			</body>
 		</html>

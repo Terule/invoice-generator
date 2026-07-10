@@ -6,11 +6,11 @@ import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 const LOOKUP_WINDOW_MS = 60 * 1000;
 const LOOKUP_MAX_REQUESTS = 30;
 
-export async function GET(
+	export async function GET(
 	request: Request,
 	context: { params: Promise<{ cep: string }> },
 ) {
-	const session = await auth();
+	const session = await auth.api.getSession({ headers: request.headers });
 
 	if (!session?.user?.id) {
 		return NextResponse.json({ message: "Unauthorized" }, { status: 401 });

@@ -5,10 +5,10 @@ import { prisma } from "@/lib/db/prisma";
 import { createInvoicePdf } from "@/lib/invoice-pdf";
 
 export async function GET(
-	_: Request,
+	request: Request,
 	context: { params: Promise<{ id: string }> },
 ) {
-	const session = await auth();
+	const session = await auth.api.getSession({ headers: request.headers });
 
 	if (!session?.user?.id) {
 		return NextResponse.json({ message: "Unauthorized" }, { status: 401 });

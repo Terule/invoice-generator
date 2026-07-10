@@ -1,5 +1,25 @@
 @import "tailwindcss";
 
+@theme {
+	/* Font families — Next.js sets --font-roboto and --font-inter on <body> */
+	--font-sans: var(--font-roboto);
+	--font-display: var(--font-inter);
+
+	/* Colors */
+	--color-background: hsl(223 28% 8%);
+	--color-foreground: hsl(42 18% 92%);
+	--color-card: hsl(223 24% 12%);
+	--color-primary: hsl(154 51% 46%);
+	--color-primary-foreground: hsl(220 30% 10%);
+	--color-secondary: hsl(223 18% 18%);
+	--color-muted: hsl(223 16% 16%);
+	--color-accent: hsl(23 88% 61%);
+	--color-border: hsl(223 16% 24%);
+
+	/* Shadows */
+	--shadow-soft: 0 24px 80px rgba(0, 0, 0, 0.35);
+}
+
 :root {
 	color-scheme: dark;
 }
