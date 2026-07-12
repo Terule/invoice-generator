@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { isAcceptedLogo, MAX_LOGO_SIZE_LABEL } from "@/lib/branding";
 import { prisma } from "@/lib/db/prisma";
-import { getSeaweedFsUrl } from "@/lib/seaweedfs";
+import { fetchSeaweedFs } from "@/lib/seaweedfs";
 
 function extensionFor(file: File) {
   return file.type === "image/jpeg" ? "jpg" : file.type === "image/png" ? "png" : "webp";
@@ -26,7 +26,16 @@ export async function GET(request: Request) {
     return NextResponse.json({ message: "Logo not found" }, { status: 404 });
   }
 
-  const response = await fetch(getSeaweedFsUrl(profile.logoPath), { cache: "no-store" });
+  let response: Response;
+
+  try {
+    response = await fetchSeaweedFs(profile.logoPath, { cache: "no-store" });
+  } catch {
+    return NextResponse.json(
+      { message: "Logo storage is temporarily unavailable. Please try again shortly." },
+      { status: 503 }
+    );
+  }
 
   if (!response.ok || !response.body) {
     return NextResponse.json({ message: "Logo not found" }, { status: 404 });
@@ -66,10 +75,19 @@ export async function POST(request: Request) {
   const logoPath = `/company-logos/${session.user.id}/${crypto.randomUUID()}.${extensionFor(file)}`;
   const upload = new FormData();
   upload.set("file", file, file.name);
-  const uploaded = await fetch(getSeaweedFsUrl(logoPath), {
-    method: "POST",
-    body: upload
-  });
+  let uploaded: Response;
+
+  try {
+    uploaded = await fetchSeaweedFs(logoPath, {
+      method: "POST",
+      body: upload
+    });
+  } catch {
+    return NextResponse.json(
+      { message: "Logo storage is starting. Please try again in a moment." },
+      { status: 503 }
+    );
+  }
 
   if (!uploaded.ok) {
     return NextResponse.json({ message: "Unable to upload logo." }, { status: 502 });
@@ -81,7 +99,7 @@ export async function POST(request: Request) {
   });
 
   if (profile.logoPath) {
-    await fetch(getSeaweedFsUrl(profile.logoPath), { method: "DELETE" }).catch(() => undefined);
+    await fetchSeaweedFs(profile.logoPath, { method: "DELETE" }).catch(() => undefined);
   }
 
   return NextResponse.json({ logoPath });
@@ -97,7 +115,7 @@ export async function DELETE(request: Request) {
   const profile = await getCurrentProfile(session.user.id);
 
   if (profile?.logoPath) {
-    await fetch(getSeaweedFsUrl(profile.logoPath), { method: "DELETE" }).catch(() => undefined);
+    await fetchSeaweedFs(profile.logoPath, { method: "DELETE" }).catch(() => undefined);
   }
 
   await prisma.companyProfile.update({

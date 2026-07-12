@@ -21,7 +21,7 @@ services:
       mysql-setup:
         condition: service_completed_successfully
       seaweedfs:
-        condition: service_started
+        condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:3000/api/health"]
       interval: 15s
@@ -70,11 +70,17 @@ services:
 
   seaweedfs:
     image: chrislusf/seaweedfs:3.90
-    command: server -dir=/data
+    command: server -dir=/data -filer
     expose:
       - "8888"
     volumes:
       - seaweedfs-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8888/"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 45s
 
 volumes:
   mysql-data:
