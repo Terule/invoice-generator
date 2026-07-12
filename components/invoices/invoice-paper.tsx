@@ -68,6 +68,8 @@ export function InvoicePaper({
   notes
 }: InvoicePaperProps) {
   const invoiceColor = sender?.invoiceColor || "#0b6281";
+  const companyName = sender?.tradingName || sender?.legalName || "Your company";
+  const isTwoLineCompanyName = companyName.length > 24;
 
   return (
     <article className="invoice-paper flex min-h-[842px] w-[595px] shrink-0 flex-col overflow-hidden border-t-[7px] bg-[#fffefd] text-slate-900 shadow-[0_24px_70px_rgba(0,0,0,0.28)]" style={{ borderTopColor: invoiceColor }}>
@@ -75,12 +77,12 @@ export function InvoicePaper({
         <div className="min-w-0 max-w-[60%]">
           <div className="flex items-stretch gap-2 pt-4">
             {sender?.logoUrl ? (
-              <div className="aspect-square shrink-0 self-stretch overflow-hidden rounded-lg bg-slate-100">
-                <Image alt="Company logo" className="h-full w-full object-contain" height={48} src={sender.logoUrl} unoptimized width={48} />
+              <div className={`relative shrink-0 overflow-hidden rounded-lg bg-slate-100 ${isTwoLineCompanyName ? "h-12 w-12" : "h-6 w-6"}`}>
+                <Image alt="Company logo" className="object-contain" fill sizes={isTwoLineCompanyName ? "48px" : "24px"} src={sender.logoUrl} unoptimized />
               </div>
             ) : null}
             <h2 className="line-clamp-2 min-w-0 break-normal font-display text-xl font-semibold leading-tight text-slate-950">
-              {sender?.tradingName || sender?.legalName || "Your company"}
+              {companyName}
             </h2>
           </div>
           {sender?.tradingName && sender.tradingName !== sender.legalName ? (

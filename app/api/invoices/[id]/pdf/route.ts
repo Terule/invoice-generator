@@ -30,6 +30,16 @@ export async function GET(
 		return NextResponse.json({ message: "Invoice not found" }, { status: 404 });
 	}
 
+	const companySnapshot = invoice.companySnapshot as Record<string, unknown>;
+	const currentCompany = await prisma.companyProfile.findUnique({
+		where: { userId: session.user.id },
+		select: { logoPath: true },
+	});
+	const company = {
+		...companySnapshot,
+		logoPath: companySnapshot.logoPath || currentCompany?.logoPath || null,
+	};
+
 	const pdf = await createInvoicePdf({
 		invoiceNumber: invoice.invoiceNumber,
 		currency: invoice.currency,
@@ -39,7 +49,7 @@ export async function GET(
 		clientEmail: invoice.clientEmail,
 		notes: invoice.notes,
 		totalCents: invoice.totalCents,
-		company: invoice.companySnapshot as Record<string, unknown>,
+		company,
 		contractor: invoice.contractorSnapshot as Record<string, unknown>,
 		items: invoice.items,
 	});
