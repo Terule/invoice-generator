@@ -76,6 +76,24 @@ function wrapText(value: string, maxCharacters: number) {
 	let line = "";
 
 	for (const word of words) {
+		if (word.length > maxCharacters) {
+			if (line) {
+				lines.push(line);
+				line = "";
+			}
+
+			for (let start = 0; start < word.length; start += maxCharacters) {
+				const segment = word.slice(start, start + maxCharacters);
+				if (segment.length === maxCharacters) {
+					lines.push(segment);
+				} else {
+					line = segment;
+				}
+			}
+
+			continue;
+		}
+
 		const nextLine = line ? `${line} ${word}` : word;
 
 		if (nextLine.length <= maxCharacters) {
@@ -87,7 +105,7 @@ function wrapText(value: string, maxCharacters: number) {
 			lines.push(line);
 		}
 
-		line = word.length > maxCharacters ? `${word.slice(0, maxCharacters - 3)}...` : word;
+		line = word;
 	}
 
 	if (line) {
@@ -110,11 +128,11 @@ function text(
 	y: number,
 	size = 10,
 	bold = false,
-	align: "left" | "right" = "left",
+	align: "left" | "center" | "right" = "left",
 	color = navy,
 ) {
 	const width = value.length * size * (bold ? 0.56 : 0.5);
-	const originX = align === "right" ? x - width : x;
+	const originX = align === "right" ? x - width : align === "center" ? x - width / 2 : x;
 	commands.push(
 		`${color} rg BT /${bold ? "F2" : "F1"} ${size} Tf 1 0 0 1 ${originX.toFixed(2)} ${y.toFixed(2)} Tm (${escapePdfText(value)}) Tj ET`,
 	);
@@ -268,13 +286,13 @@ export function createInvoicePdf(data: InvoicePdfData) {
 	const tableTop = 516;
 	fillRoundedTopRect(commands, tableLeft, tableTop - 29, tableRight - tableLeft, 29, 7, paleBlue);
 	text(commands, "DESCRIPTION OF SERVICES", 44, tableTop - 18, 8, true, "left", "0.09 0.27 0.35");
-	text(commands, "QTY", 337, tableTop - 18, 8, true, "right", "0.09 0.27 0.35");
-	text(commands, "RATE", 438, tableTop - 18, 8, true, "right", "0.09 0.27 0.35");
-	text(commands, "AMOUNT", 551, tableTop - 18, 8, true, "right", "0.09 0.27 0.35");
+	text(commands, "QTY", 319, tableTop - 18, 8, true, "center", "0.09 0.27 0.35");
+	text(commands, "RATE", 392, tableTop - 18, 8, true, "center", "0.09 0.27 0.35");
+	text(commands, "AMOUNT", 498, tableTop - 18, 8, true, "center", "0.09 0.27 0.35");
 
 	let rowY = tableTop - 29;
 	items.forEach((item, index) => {
-		const description = wrapText(item.description || "Service item", 48).slice(0, 2);
+		const description = wrapText(item.description || "Service item", 48);
 		const rowHeight = Math.max(40, description.length * 13 + 20);
 		rowY -= rowHeight;
 		if (index === items.length - 1) {
@@ -285,9 +303,9 @@ export function createInvoicePdf(data: InvoicePdfData) {
 		description.forEach((value, index) => {
 			text(commands, value, 44, rowY + rowHeight - 22 - index * 13, 9, index === 0);
 		});
-		text(commands, String(item.quantity), 337, rowY + rowHeight - 22, 9, false, "right", slate);
-		text(commands, formatMoney(item.unitPriceCents, data.currency), 438, rowY + rowHeight - 22, 9, false, "right", slate);
-		text(commands, formatMoney(item.quantity * item.unitPriceCents, data.currency), 551, rowY + rowHeight - 22, 9, true, "right");
+		text(commands, String(item.quantity), 319, rowY + rowHeight - 22, 9, false, "center", slate);
+		text(commands, formatMoney(item.unitPriceCents, data.currency), 392, rowY + rowHeight - 22, 9, false, "center", slate);
+		text(commands, formatMoney(item.quantity * item.unitPriceCents, data.currency), 498, rowY + rowHeight - 22, 9, true, "center");
 	});
 
 	const totalLeft = 338;
@@ -323,7 +341,7 @@ export function createInvoicePdf(data: InvoicePdfData) {
 		});
 	}
 
-	text(commands, `${companyName} - ${data.invoiceNumber}`, pageWidth / 2, 20, 8, false, "left", "0.48 0.58 0.7");
+	text(commands, `${companyName} - ${data.invoiceNumber}`, pageWidth / 2, 20, 8, false, "center", "0.48 0.58 0.7");
 
 	const content = commands.join("\n");
 	const objects = [

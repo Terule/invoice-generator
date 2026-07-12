@@ -72,14 +72,16 @@ export function InvoicePaper({
     <article className="invoice-paper flex min-h-[842px] w-[595px] shrink-0 flex-col overflow-hidden border-t-[7px] bg-[#fffefd] text-slate-900 shadow-[0_24px_70px_rgba(0,0,0,0.28)]" style={{ borderTopColor: invoiceColor }}>
       <header className="flex items-start justify-between gap-6 px-8 pb-5 pt-6">
         <div className="min-w-0 max-w-[60%]">
-          <div className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-lg bg-slate-100">
-            {sender?.logoUrl ? <Image alt="Company logo" className="h-full w-full object-contain" height={28} src={sender.logoUrl} unoptimized width={28} /> : null}
+          <div className="flex items-start gap-2">
+            <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-slate-100">
+              {sender?.logoUrl ? <Image alt="Company logo" className="h-full w-full object-contain" height={28} src={sender.logoUrl} unoptimized width={28} /> : null}
+            </div>
+            <h2 className="line-clamp-2 min-w-0 break-normal font-display text-xl font-semibold leading-tight text-slate-950">
+              {sender?.tradingName || sender?.legalName || "Your company"}
+            </h2>
           </div>
-          <h2 className="mt-3 break-words font-display text-xl font-semibold leading-tight text-slate-950">
-            {sender?.tradingName || sender?.legalName || "Your company"}
-          </h2>
           {sender?.tradingName && sender.tradingName !== sender.legalName ? (
-            <p className="mt-1 break-words text-[10px] text-slate-500">{sender.legalName}</p>
+            <p className="mt-2 break-normal text-[10px] text-slate-500">{sender.legalName}</p>
           ) : null}
         </div>
 

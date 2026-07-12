@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarDays, Download, FileText, Grid3X3, List } from "lucide-react";
+import { CalendarDays, Download, FileText, Grid3X3, List, Pencil, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { SectionHeader } from "@/components/shared/section-header";
@@ -80,7 +80,7 @@ export function InvoicesPageContent() {
                     <CalendarDays className="h-3.5 w-3.5" />
                     Due {formatDueDate(invoice.dueDate)}
                   </p>
-                  <DownloadLink invoiceId={invoice.id} invoiceNumber={invoice.invoiceNumber} />
+                  <InvoiceActions invoiceId={invoice.id} invoiceNumber={invoice.invoiceNumber} />
                 </div>
               </article>
             ) : (
@@ -93,7 +93,7 @@ export function InvoicesPageContent() {
                   <p className="mt-1 text-xs text-foreground/55">Due {formatDueDate(invoice.dueDate)} · {invoice.status}</p>
                 </div>
                 <p className="shrink-0 text-sm font-semibold">{formatCurrency(invoice.totalCents, invoice.currency)}</p>
-                <DownloadLink invoiceId={invoice.id} invoiceNumber={invoice.invoiceNumber} />
+                <InvoiceActions invoiceId={invoice.id} invoiceNumber={invoice.invoiceNumber} />
               </article>
             )
           ))
@@ -105,15 +105,35 @@ export function InvoicesPageContent() {
   );
 }
 
-function DownloadLink({ invoiceId, invoiceNumber }: { invoiceId: string; invoiceNumber: string }) {
+function InvoiceActions({ invoiceId, invoiceNumber }: { invoiceId: string; invoiceNumber: string }) {
   return (
-    <a
-      aria-label={`Download ${invoiceNumber}`}
-      className="inline-flex shrink-0 items-center gap-2 rounded-full border border-border px-3 py-1.5 text-xs font-medium text-foreground/78 transition hover:bg-card hover:text-foreground"
-      href={`/api/invoices/${invoiceId}/pdf`}
-    >
-      <Download className="h-3.5 w-3.5" />
-      <span className="hidden sm:inline">Download</span>
-    </a>
+    <div className="flex shrink-0 items-center gap-1">
+      <a
+        aria-label={`Download ${invoiceNumber}`}
+        className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-border text-foreground/78 transition hover:bg-card hover:text-foreground"
+        href={`/api/invoices/${invoiceId}/pdf`}
+        title="Download invoice"
+      >
+        <Download className="h-3.5 w-3.5" />
+      </a>
+      <Button
+        aria-label={`Edit ${invoiceNumber}`}
+        className="h-8 w-8 px-0 text-foreground/78"
+        title="Edit invoice"
+        type="button"
+        variant="ghost"
+      >
+        <Pencil className="h-3.5 w-3.5" />
+      </Button>
+      <Button
+        aria-label={`Delete ${invoiceNumber}`}
+        className="h-8 w-8 px-0 text-rose-300 hover:text-rose-200"
+        title="Delete invoice"
+        type="button"
+        variant="ghost"
+      >
+        <Trash2 className="h-3.5 w-3.5" />
+      </Button>
+    </div>
   );
 }
