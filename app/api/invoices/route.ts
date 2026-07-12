@@ -4,6 +4,8 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { getCompanyIdentifier, getNextInvoiceNumber } from "@/lib/dashboard";
 import { prisma } from "@/lib/db/prisma";
+import { createInvoicePdf } from "@/lib/invoice-pdf";
+import { fetchSeaweedFs } from "@/lib/seaweedfs";
 import { createInvoiceSchema } from "@/lib/validations";
 
 export async function GET() {
@@ -155,5 +157,48 @@ export async function POST(request: Request) {
 		},
 	});
 
-	return NextResponse.json(invoice, { status: 201 });
+	const pdfPath = `/invoices/${session.user.id}/${invoice.id}.pdf`;
+
+	try {
+		const pdf = await createInvoicePdf({
+			invoiceNumber: invoice.invoiceNumber,
+			currency: invoice.currency,
+			issueDate: invoice.issueDate,
+			dueDate: invoice.dueDate,
+			clientName: invoice.clientName,
+			clientEmail: invoice.clientEmail,
+			notes: invoice.notes,
+			totalCents: invoice.totalCents,
+			company: invoice.companySnapshot as Record<string, unknown>,
+			contractor: invoice.contractorSnapshot as Record<string, unknown>,
+			items: invoice.items,
+		});
+		const upload = new FormData();
+		upload.set(
+			"file",
+			new Blob([pdf], { type: "application/pdf" }),
+			`${invoice.invoiceNumber}.pdf`,
+		);
+		const storedPdf = await fetchSeaweedFs(pdfPath, { method: "POST", body: upload });
+
+		if (!storedPdf.ok) {
+			throw new Error("Invoice storage rejected the PDF upload.");
+		}
+
+		const storedInvoice = await prisma.invoice.update({
+			where: { id: invoice.id },
+			data: { pdfPath },
+			include: { items: true },
+		});
+
+		return NextResponse.json(storedInvoice, { status: 201 });
+	} catch {
+		await fetchSeaweedFs(pdfPath, { method: "DELETE" }).catch(() => undefined);
+		await prisma.invoice.delete({ where: { id: invoice.id } });
+
+		return NextResponse.json(
+			{ message: "Unable to generate and store the invoice PDF. Please try again." },
+			{ status: 503 },
+		);
+	}
 }

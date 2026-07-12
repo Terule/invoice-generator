@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db/prisma";
-import { createInvoicePdf } from "@/lib/invoice-pdf";
+import { fetchSeaweedFs } from "@/lib/seaweedfs";
 
 export async function GET(
 	request: Request,
@@ -21,40 +21,29 @@ export async function GET(
 			id,
 			userId: session.user.id,
 		},
-		include: {
-			items: true,
-		},
 	});
 
 	if (!invoice) {
 		return NextResponse.json({ message: "Invoice not found" }, { status: 404 });
 	}
 
-	const companySnapshot = invoice.companySnapshot as Record<string, unknown>;
-	const currentCompany = await prisma.companyProfile.findUnique({
-		where: { userId: session.user.id },
-		select: { logoPath: true },
-	});
-	const company = {
-		...companySnapshot,
-		logoPath: companySnapshot.logoPath || currentCompany?.logoPath || null,
-	};
+	if (!invoice.pdfPath) {
+		return NextResponse.json({ message: "The saved PDF is not available for this invoice." }, { status: 404 });
+	}
 
-	const pdf = await createInvoicePdf({
-		invoiceNumber: invoice.invoiceNumber,
-		currency: invoice.currency,
-		issueDate: invoice.issueDate,
-		dueDate: invoice.dueDate,
-		clientName: invoice.clientName,
-		clientEmail: invoice.clientEmail,
-		notes: invoice.notes,
-		totalCents: invoice.totalCents,
-		company,
-		contractor: invoice.contractorSnapshot as Record<string, unknown>,
-		items: invoice.items,
-	});
+	let pdf: Response;
 
-	return new NextResponse(pdf, {
+	try {
+		pdf = await fetchSeaweedFs(invoice.pdfPath, { cache: "no-store" });
+	} catch {
+		return NextResponse.json({ message: "Invoice storage is temporarily unavailable." }, { status: 503 });
+	}
+
+	if (!pdf.ok || !pdf.body) {
+		return NextResponse.json({ message: "The saved PDF is not available for this invoice." }, { status: 404 });
+	}
+
+	return new NextResponse(pdf.body, {
 		headers: {
 			"Content-Type": "application/pdf",
 			"Content-Disposition": `attachment; filename="${invoice.invoiceNumber}.pdf"`,

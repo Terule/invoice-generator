@@ -1,0 +1,2 @@
+ALTER TABLE `Invoice`
+    ADD COLUMN `pdfPath` VARCHAR(512) NULL;

@@ -79,6 +79,7 @@ model Invoice {
   totalCents       Int
   companySnapshot  Json
   contractorSnapshot Json
+  pdfPath          String?       @db.VarChar(512)
   status           InvoiceStatus @default(DRAFT)
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
