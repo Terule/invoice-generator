@@ -26,6 +26,25 @@ const slate = "0.28 0.36 0.48";
 const border = "0.88 0.91 0.94";
 const paleBlue = "0.86 0.93 0.95";
 const totalBlue = "0.945 0.973 0.98";
+const helveticaWidths: Record<string, number> = {
+	" ": 278,
+	"-": 333,
+	".": 278,
+	",": 278,
+	"£": 556,
+	"€": 556,
+	"$": 556,
+	"0": 556,
+	"1": 556,
+	"2": 556,
+	"3": 556,
+	"4": 556,
+	"5": 556,
+	"6": 556,
+	"7": 556,
+	"8": 556,
+	"9": 556,
+};
 
 function asString(value: unknown) {
 	return typeof value === "string" ? value : "";
@@ -131,7 +150,9 @@ function text(
 	align: "left" | "center" | "right" = "left",
 	color = navy,
 ) {
-	const width = value.length * size * (bold ? 0.56 : 0.5);
+	const width = [...value].reduce((total, character) => {
+		return total + (helveticaWidths[character] ?? 556);
+	}, 0) * (size / 1_000);
 	const originX = align === "right" ? x - width : align === "center" ? x - width / 2 : x;
 	commands.push(
 		`${color} rg BT /${bold ? "F2" : "F1"} ${size} Tf 1 0 0 1 ${originX.toFixed(2)} ${y.toFixed(2)} Tm (${escapePdfText(value)}) Tj ET`,
@@ -256,13 +277,13 @@ export async function createInvoicePdf(data: InvoicePdfData) {
 		? data.items
 		: [{ description: "Service item", quantity: 1, unitPriceCents: data.totalCents }];
 	const logo = await loadCompanyLogo(data.company);
-	const logoSize = companyNameLines.length > 1 ? 44 : 20;
+	const logoSize = companyNameLines.length > 1 ? 40 : 20;
 	const companyNameX = logo ? 32 + logoSize + 10 : 32;
 
 	fillRect(commands, 0, pageHeight - 7, pageWidth, 7, accent);
 
 	if (logo) {
-		commands.push(`q ${logoSize} 0 0 ${logoSize} 32 ${companyNameLines.length > 1 ? 728 : 748} cm /Logo Do Q`);
+		commands.push(`q ${logoSize} 0 0 ${logoSize} 32 ${companyNameLines.length > 1 ? 736 : 748} cm /Logo Do Q`);
 	}
 
 	companyNameLines.forEach((value, index) => {
