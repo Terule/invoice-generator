@@ -1,16 +1,18 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
-import { Building2, Landmark, MapPinned, Pencil } from "lucide-react";
-import { FormEvent, useState } from "react";
+import { Building2, ImageUp, Landmark, MapPinned, Palette, Pencil, Trash2 } from "lucide-react";
+import Image from "next/image";
+import { type ChangeEvent, type FormEvent, useState } from "react";
 
-import { useDashboardData } from "@/components/shell/dashboard-shell";
 import { SectionHeader } from "@/components/shared/section-header";
+import { useDashboardData } from "@/components/shell/dashboard-shell";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { formatCnpj, updatePaymentDetails } from "@/lib/dashboard";
+import { DEFAULT_INVOICE_COLOR, isAcceptedLogo, MAX_LOGO_SIZE_LABEL } from "@/lib/branding";
+import { formatCnpj, removeCompanyLogo, updateCompanyBranding, updatePaymentDetails, uploadCompanyLogo } from "@/lib/dashboard";
 import type { PaymentDetailsInput } from "@/lib/validations";
 
 function paymentFormFromCompany(company: ReturnType<typeof useDashboardData>["bootstrap"]["companyProfile"]) {
@@ -25,17 +27,49 @@ function paymentFormFromCompany(company: ReturnType<typeof useDashboardData>["bo
   };
 }
 
+function brandingFormFromCompany(company: ReturnType<typeof useDashboardData>["bootstrap"]["companyProfile"]) {
+  return {
+    invoiceColor: company?.invoiceColor ?? DEFAULT_INVOICE_COLOR,
+    logoPath: company?.logoPath ?? null
+  };
+}
+
 export function CompanyPageContent() {
   const { bootstrap, refresh } = useDashboardData();
   const company = bootstrap.companyProfile;
   const [isEditingPayment, setIsEditingPayment] = useState(false);
   const [paymentForm, setPaymentForm] = useState<PaymentDetailsInput>(() => paymentFormFromCompany(company));
   const [paymentError, setPaymentError] = useState("");
+  const [brandingForm, setBrandingForm] = useState(() => brandingFormFromCompany(company));
+  const [brandingError, setBrandingError] = useState("");
   const updatePaymentMutation = useMutation({
     mutationFn: updatePaymentDetails,
     onSuccess: async () => {
       await refresh();
       setIsEditingPayment(false);
+    }
+  });
+  const updateBrandingMutation = useMutation({
+    mutationFn: updateCompanyBranding,
+    onSuccess: async () => {
+      await refresh();
+      setBrandingError("");
+    }
+  });
+  const uploadLogoMutation = useMutation({
+    mutationFn: uploadCompanyLogo,
+    onSuccess: async ({ logoPath }) => {
+      setBrandingForm((current) => ({ ...current, logoPath }));
+      setBrandingError("");
+      await refresh();
+    }
+  });
+  const removeLogoMutation = useMutation({
+    mutationFn: removeCompanyLogo,
+    onSuccess: async () => {
+      setBrandingForm((current) => ({ ...current, logoPath: null }));
+      setBrandingError("");
+      await refresh();
     }
   });
 
@@ -75,6 +109,47 @@ export function CompanyPageContent() {
     setPaymentError("");
   }
 
+  async function handleLogoChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    if (!isAcceptedLogo(file)) {
+      setBrandingError(`Choose a PNG, JPEG, or WebP logo up to ${MAX_LOGO_SIZE_LABEL}.`);
+      event.target.value = "";
+      return;
+    }
+
+    try {
+      await uploadLogoMutation.mutateAsync(file);
+    } catch (error) {
+      setBrandingError(error instanceof Error ? error.message : "Unable to upload logo.");
+    } finally {
+      event.target.value = "";
+    }
+  }
+
+  async function handleLogoRemove() {
+    try {
+      await removeLogoMutation.mutateAsync();
+    } catch (error) {
+      setBrandingError(error instanceof Error ? error.message : "Unable to remove logo.");
+    }
+  }
+
+  async function handleBrandingSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setBrandingError("");
+
+    try {
+      await updateBrandingMutation.mutateAsync(brandingForm);
+    } catch (error) {
+      setBrandingError(error instanceof Error ? error.message : "Unable to save invoice branding.");
+    }
+  }
+
   return (
     <section className="grid gap-6 xl:grid-cols-2">
       <Card className="animate-fade-in-up">
@@ -104,6 +179,57 @@ export function CompanyPageContent() {
 
       <Card className="animate-fade-in-up stagger-1">
         <SectionHeader
+          description={`Used on future invoice previews and PDFs. Logo limit: ${MAX_LOGO_SIZE_LABEL}.`}
+          icon={Palette}
+          title="Invoice Branding"
+        />
+
+        {company ? (
+          <form className="mt-6 space-y-5" onSubmit={handleBrandingSubmit}>
+            <div className="flex items-center gap-4">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-secondary/60">
+                {brandingForm.logoPath ? (
+                  <Image alt="Company logo preview" className="h-full w-full object-contain" height={64} src={`/api/company-profile/logo?path=${encodeURIComponent(brandingForm.logoPath)}`} unoptimized width={64} />
+                ) : (
+                  <ImageUp className="h-6 w-6 text-foreground/40" />
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <Label htmlFor="company-logo">Company logo</Label>
+                <Input accept="image/png,image/jpeg,image/webp" className="mt-2" disabled={uploadLogoMutation.isPending} id="company-logo" onChange={handleLogoChange} type="file" />
+              </div>
+              {brandingForm.logoPath ? (
+                <Button aria-label="Remove company logo" className="h-10 w-10 shrink-0 px-0" disabled={removeLogoMutation.isPending} onClick={handleLogoRemove} type="button" variant="ghost">
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              ) : null}
+            </div>
+
+            <div className="flex items-end gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="invoice-color">Invoice color</Label>
+                <input
+                  aria-label="Invoice color"
+                  className="block h-11 w-16 cursor-pointer rounded-xl border border-border bg-secondary p-1"
+                  id="invoice-color"
+                  onChange={(event) => setBrandingForm((current) => ({ ...current, invoiceColor: event.target.value }))}
+                  type="color"
+                  value={brandingForm.invoiceColor}
+                />
+              </div>
+              <p className="pb-2 text-sm text-foreground/65">{brandingForm.invoiceColor.toUpperCase()}</p>
+            </div>
+
+            <Button disabled={updateBrandingMutation.isPending} type="submit">
+              {updateBrandingMutation.isPending ? "Saving..." : "Save invoice branding"}
+            </Button>
+            {brandingError ? <p className="text-sm text-rose-300" role="alert">{brandingError}</p> : null}
+          </form>
+        ) : null}
+      </Card>
+
+      <Card className="animate-fade-in-up stagger-2">
+        <SectionHeader
           description="Your fixed business address for future invoices."
           icon={MapPinned}
           title="Address"
@@ -124,7 +250,7 @@ export function CompanyPageContent() {
         ) : null}
       </Card>
 
-      <Card className="animate-fade-in-up stagger-2 xl:col-span-2">
+      <Card className="animate-fade-in-up stagger-3 xl:col-span-2">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <SectionHeader
             description="Shown on future invoices. Issued invoices keep their original payment details."

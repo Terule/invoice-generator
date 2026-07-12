@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { isValidCnpj, normalizeCnpj } from "@/lib/cnpj";
 import {
   createCompanyProfile,
   formatCep,
@@ -32,6 +33,8 @@ export function CompanyOnboardingModal({
   const [cepLookupPending, setCepLookupPending] = useState(false);
   const [onboardingStep, setOnboardingStep] = useState<"company" | "payment">("company");
   const [paymentError, setPaymentError] = useState("");
+  const normalizedCnpj = normalizeCnpj(companyForm.taxId);
+  const isCnpjValid = isValidCnpj(normalizedCnpj);
 
   const createCompanyMutation = useMutation({
     mutationFn: createCompanyProfile,
@@ -64,6 +67,10 @@ export function CompanyOnboardingModal({
   }
 
   async function handleCompanyCnpjLookup() {
+    if (!isCnpjValid) {
+      return;
+    }
+
     setCompanyLookupPending(true);
     setCompanyLookupError("");
 
@@ -73,7 +80,7 @@ export function CompanyOnboardingModal({
         ...current,
         legalName: payload.legalName ?? current.legalName,
         tradingName: payload.tradingName ?? current.tradingName,
-        taxId: normalizeDigits(payload.taxId ?? current.taxId),
+        taxId: normalizeCnpj(payload.taxId ?? current.taxId),
         cep: normalizeDigits(payload.cep ?? current.cep),
         street: payload.street ?? current.street,
         number: payload.number ?? current.number,
@@ -162,13 +169,13 @@ export function CompanyOnboardingModal({
                   inputMode="numeric"
                   value={formatCnpj(companyForm.taxId)}
                   onChange={(event) =>
-                    updateCompanyForm("taxId", limitDigits(event.target.value, 14))
+                    updateCompanyForm("taxId", normalizeCnpj(event.target.value))
                   }
                 />
                 <Button
                   aria-label="Look up CNPJ"
                   className={`h-10 shrink-0 overflow-hidden transition-[width,padding] duration-300 ${companyLookupPending ? "w-10 px-0" : "w-full sm:w-28"}`}
-                  disabled={companyLookupPending}
+                  disabled={companyLookupPending || !isCnpjValid}
                   onClick={handleCompanyCnpjLookup}
                   type="button"
                   variant="outline"
@@ -185,6 +192,8 @@ export function CompanyOnboardingModal({
               </div>
               {companyLookupError ? (
                 <p className="text-sm text-amber-300">{companyLookupError}</p>
+              ) : (normalizedCnpj.length === 14 && !isCnpjValid) ? (
+                <p className="text-sm text-rose-300">The CNPJ check digits are invalid.</p>
               ) : (
                 <p className="flex items-center gap-2 text-xs text-foreground/60">
                   <CircleHelp className="h-3.5 w-3.5" />

@@ -120,6 +120,8 @@ export async function POST(request: Request) {
 				city: companyProfile.city,
 				state: companyProfile.state,
 				country: companyProfile.country,
+				logoPath: companyProfile.logoPath,
+				invoiceColor: companyProfile.invoiceColor,
 				paymentBeneficiary: companyProfile.paymentBeneficiary,
 				paymentBankName: companyProfile.paymentBankName,
 				paymentAccountNumber: companyProfile.paymentAccountNumber,

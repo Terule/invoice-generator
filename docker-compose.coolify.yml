@@ -11,6 +11,7 @@ services:
       DB_NAME: ${DB_NAME:-invoice_generator}
       DB_HOST: mysql
       DB_PORT: "3306"
+      SEAWEEDFS_URL: http://seaweedfs:8888
       AUTH_URL: ${AUTH_URL:-https://invoices.terule.dev.br}
       AUTH_SECRET: ${AUTH_SECRET:-replace-with-a-long-random-secret}
       AUTH_TRUST_HOST: ${AUTH_TRUST_HOST:-false}
@@ -21,6 +22,8 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
+      seaweedfs:
+        condition: service_started
     healthcheck:
       test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:3000/api/health"]
       interval: 15s
@@ -46,5 +49,15 @@ services:
       start_period: 30s
     restart: unless-stopped
 
+  seaweedfs:
+    image: chrislusf/seaweedfs:3.90
+    command: server -dir=/data
+    expose:
+      - "8888"
+    volumes:
+      - seaweedfs-data:/data
+    restart: unless-stopped
+
 volumes:
   mysql-data:
+  seaweedfs-data:

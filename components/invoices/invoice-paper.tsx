@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 import { formatCurrency } from "@/lib/formatters";
 
 type InvoicePaperProps = {
@@ -10,6 +12,8 @@ type InvoicePaperProps = {
     tradingName?: string | null;
     taxId?: string | null;
     address?: string | null;
+    logoUrl?: string | null;
+    invoiceColor?: string | null;
     paymentBeneficiary?: string | null;
     paymentBankName?: string | null;
     paymentAccountNumber?: string | null;
@@ -62,13 +66,14 @@ export function InvoicePaper({
   totalCents,
   notes
 }: InvoicePaperProps) {
+  const invoiceColor = sender?.invoiceColor || "#0b6281";
+
   return (
-    <article className="invoice-paper flex min-h-[842px] w-[595px] shrink-0 flex-col overflow-hidden border-t-[7px] border-[#0b6281] bg-[#fffefd] text-slate-900 shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
+    <article className="invoice-paper flex min-h-[842px] w-[595px] shrink-0 flex-col overflow-hidden border-t-[7px] bg-[#fffefd] text-slate-900 shadow-[0_24px_70px_rgba(0,0,0,0.28)]" style={{ borderTopColor: invoiceColor }}>
       <header className="flex items-start justify-between gap-6 px-8 pb-5 pt-6">
         <div className="min-w-0 max-w-[60%]">
-          <div className="flex items-center gap-2">
-            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#0b6281] font-display text-sm font-bold text-white">T</span>
-            <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-[#0b6281]">International services</p>
+          <div className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-lg bg-slate-100">
+            {sender?.logoUrl ? <Image alt="Company logo" className="h-full w-full object-contain" height={28} src={sender.logoUrl} unoptimized width={28} /> : null}
           </div>
           <h2 className="mt-3 break-words font-display text-xl font-semibold leading-tight text-slate-950">
             {sender?.tradingName || sender?.legalName || "Your company"}
@@ -79,7 +84,7 @@ export function InvoicePaper({
         </div>
 
         <div className="shrink-0 text-right">
-          <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#0b6281]">Invoice</p>
+          <p className="text-[10px] font-bold uppercase tracking-[0.22em]" style={{ color: invoiceColor }}>Invoice</p>
           <p className="mt-1 font-display text-xl font-semibold text-slate-950">{invoiceNumber}</p>
           <div className="mt-3 space-y-1 text-[10px] text-slate-500">
             <p><span className="font-semibold text-slate-700">Issue date:</span> {formatDate(issueDate)}</p>
@@ -90,13 +95,13 @@ export function InvoicePaper({
 
       <section className="grid gap-3 px-8 pb-5 sm:grid-cols-2">
         <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-[0_3px_10px_rgba(15,23,42,0.07)]">
-          <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#0b6281]">Bill from - seller</p>
+          <p className="text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: invoiceColor }}>Bill from - seller</p>
           <p className="mt-2 break-words text-sm font-semibold text-slate-950">{sender?.legalName || "Your company"}</p>
           <Address>{sender?.address}</Address>
           {sender?.taxId ? <p className="mt-1 text-[10px] text-slate-600">Tax ID (CNPJ): {sender.taxId}</p> : null}
         </div>
         <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-[0_3px_10px_rgba(15,23,42,0.07)]">
-          <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#0b6281]">Bill to - buyer</p>
+          <p className="text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: invoiceColor }}>Bill to - buyer</p>
           <p className="mt-2 break-words text-sm font-semibold text-slate-950">{recipient.name || "Contractor name"}</p>
           <Address>{recipient.address}</Address>
           {recipient.email ? <p className="mt-1 break-all text-[10px] text-slate-600">{recipient.email}</p> : null}
@@ -135,7 +140,7 @@ export function InvoicePaper({
             <span>Subtotal</span>
             <span>{formatCurrency(totalCents, currency)}</span>
           </div>
-          <div className="flex items-center justify-between bg-[#0b6281] px-3 py-2 text-[11px] font-bold text-white">
+          <div className="flex items-center justify-between px-3 py-2 text-[11px] font-bold text-white" style={{ backgroundColor: invoiceColor }}>
             <span>Total due</span>
             <span>{formatCurrency(totalCents, currency)}</span>
           </div>
@@ -143,7 +148,7 @@ export function InvoicePaper({
       </section>
 
       <section className="mx-8 mt-5 rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-[0_3px_10px_rgba(15,23,42,0.05)]">
-        <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#0b6281]">Payment instructions</p>
+        <p className="text-[10px] font-bold uppercase tracking-[0.12em]" style={{ color: invoiceColor }}>Payment instructions</p>
         <p className="mt-1 text-[10px] leading-4 text-slate-600">
           Please include <span className="font-semibold text-slate-800">{invoiceNumber}</span> as your payment reference. Payment is due by {formatDate(dueDate)} in {currency}.
         </p>
@@ -157,8 +162,8 @@ export function InvoicePaper({
       </section>
 
       {notes ? (
-        <section className="mx-8 mt-4 border-l-2 border-[#0b6281] bg-[#f4fafb] px-3 py-2">
-          <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-[#0b6281]">Notes</p>
+        <section className="mx-8 mt-4 border-l-2 bg-[#f4fafb] px-3 py-2" style={{ borderLeftColor: invoiceColor }}>
+          <p className="text-[9px] font-bold uppercase tracking-[0.12em]" style={{ color: invoiceColor }}>Notes</p>
           <p className="mt-1 whitespace-pre-wrap break-words text-[10px] leading-4 text-slate-600">{notes}</p>
         </section>
       ) : null}

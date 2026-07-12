@@ -11,6 +11,7 @@ services:
       DB_NAME: ${DB_NAME:-invoice_generator}
       DB_HOST: mysql
       DB_PORT: "3306"
+      SEAWEEDFS_URL: http://seaweedfs:8888
       AUTH_URL: ${AUTH_URL:-http://localhost:3000}
     ports:
       - "3000:3000"
@@ -19,6 +20,8 @@ services:
         condition: service_healthy
       mysql-setup:
         condition: service_completed_successfully
+      seaweedfs:
+        condition: service_started
     healthcheck:
       test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:3000/api/health"]
       interval: 15s
@@ -65,5 +68,14 @@ services:
       retries: 10
       start_period: 30s
 
+  seaweedfs:
+    image: chrislusf/seaweedfs:3.90
+    command: server -dir=/data
+    expose:
+      - "8888"
+    volumes:
+      - seaweedfs-data:/data
+
 volumes:
   mysql-data:
+  seaweedfs-data:

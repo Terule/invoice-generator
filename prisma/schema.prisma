@@ -111,6 +111,8 @@ model CompanyProfile {
   city           String
   state          String
   country        String               @default("Brazil")
+  logoPath       String?              @db.VarChar(512)
+  invoiceColor   String               @default("#0b6281")
   paymentBeneficiary String?
   paymentBankName String?
   paymentAccountNumber String?

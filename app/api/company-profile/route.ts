@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
+import { normalizeCnpj } from "@/lib/cnpj";
 import { prisma } from "@/lib/db/prisma";
 import { companyProfileSchema } from "@/lib/validations";
 
@@ -47,7 +48,7 @@ export async function POST(request: Request) {
 			userId: session.user.id,
 			legalName: parsed.data.legalName,
 			tradingName: parsed.data.tradingName?.trim() || parsed.data.legalName,
-			taxId: normalizeDigits(parsed.data.taxId),
+			taxId: normalizeCnpj(parsed.data.taxId),
 			cep: normalizeDigits(parsed.data.cep),
 			street: parsed.data.street,
 			number: parsed.data.number,

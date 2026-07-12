@@ -1,7 +1,10 @@
 import { z } from "zod";
 
+import { isValidInvoiceColor } from "@/lib/branding";
+import { isValidCnpj } from "@/lib/cnpj";
+
 const cepSchema = z.string().trim().regex(/^\d{8}$/, "CEP must have 8 digits");
-const cnpjSchema = z.string().trim().regex(/^\d{14}$|^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$/, "Invalid CNPJ");
+const cnpjSchema = z.string().trim().refine(isValidCnpj, "Invalid CNPJ check digits");
 
 const paymentDetailsFields = z.object({
   paymentBeneficiary: z.string().trim().max(191).optional(),
@@ -35,6 +38,10 @@ function validatePaymentDetails(
 }
 
 export const paymentDetailsSchema = paymentDetailsFields.superRefine(validatePaymentDetails);
+
+export const companyBrandingSchema = z.object({
+  invoiceColor: z.string().refine(isValidInvoiceColor, "Invalid invoice color.")
+});
 
 export const createInvoiceSchema = z.object({
   clientName: z.string().min(2),

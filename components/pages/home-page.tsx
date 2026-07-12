@@ -23,10 +23,12 @@ import { useInvoiceBuilder } from "@/hooks/use-invoice-builder";
 import type { InvoiceForm } from "@/lib/dashboard";
 import {
   currencyOptions,
+  formatCentsInput,
   formatCnpj,
   getCompanyIdentifier,
   getCurrencyOption,
-  getNextInvoiceNumber
+  getNextInvoiceNumber,
+  normalizeCentsInput
 } from "@/lib/dashboard";
 
 export function HomePageContent() {
@@ -246,14 +248,16 @@ export function HomePageContent() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor={`${item.id}-rate`}>Rate (cents)</Label>
+                  <Label htmlFor={`${item.id}-rate`}>Rate</Label>
                   <Input
                     id={`${item.id}-rate`}
-                    min="1"
                     required
-                    type="number"
-                    value={item.unitPriceCents}
-                    onChange={(event) => updateLineItem(item.id, "unitPriceCents", event.target.value)}
+                    inputMode="decimal"
+                    value={formatCentsInput(item.unitPriceCents)}
+                    onChange={(event) =>
+                      updateLineItem(item.id, "unitPriceCents", normalizeCentsInput(event.target.value))
+                    }
+                    onFocus={(event) => event.currentTarget.select()}
                   />
                 </div>
                 <Button
@@ -316,6 +320,8 @@ export function HomePageContent() {
                     tradingName: bootstrap.companyProfile.tradingName,
                     taxId: formatCnpj(bootstrap.companyProfile.taxId),
                     address: companyAddress,
+                    logoUrl: bootstrap.companyProfile.logoPath ? `/api/company-profile/logo?path=${encodeURIComponent(bootstrap.companyProfile.logoPath)}` : null,
+                    invoiceColor: bootstrap.companyProfile.invoiceColor,
                     paymentBeneficiary: bootstrap.companyProfile.paymentBeneficiary,
                     paymentBankName: bootstrap.companyProfile.paymentBankName,
                     paymentAccountNumber: bootstrap.companyProfile.paymentAccountNumber,

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
+import { isValidCnpj, normalizeCnpj } from "@/lib/cnpj";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 const LOOKUP_WINDOW_MS = 60 * 1000;
@@ -38,9 +39,9 @@ const LOOKUP_MAX_REQUESTS = 30;
 	}
 
 	const { cnpj: rawCnpj } = await context.params;
-	const cnpj = rawCnpj.replace(/\D/g, "");
+	const cnpj = normalizeCnpj(rawCnpj);
 
-	if (!/^\d{14}$/.test(cnpj)) {
+	if (!isValidCnpj(cnpj)) {
 		return NextResponse.json({ message: "Invalid CNPJ." }, { status: 400 });
 	}
 

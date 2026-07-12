@@ -31,6 +31,18 @@ function asString(value: unknown) {
 	return typeof value === "string" ? value : "";
 }
 
+function pdfColorFromHex(value: string) {
+	if (!/^#[0-9a-fA-F]{6}$/.test(value)) {
+		return teal;
+	}
+
+	const red = Number.parseInt(value.slice(1, 3), 16) / 255;
+	const green = Number.parseInt(value.slice(3, 5), 16) / 255;
+	const blue = Number.parseInt(value.slice(5, 7), 16) / 255;
+
+	return `${red.toFixed(3)} ${green.toFixed(3)} ${blue.toFixed(3)}`;
+}
+
 function escapePdfText(value: string) {
 	return value
 		.replace(/\\/g, "\\\\")
@@ -85,6 +97,12 @@ function wrapText(value: string, maxCharacters: number) {
 	return lines.length ? lines : [""];
 }
 
+function wrapTextPreservingLineBreaks(value: string, maxCharacters: number) {
+	return value.split(/\r?\n/).flatMap((paragraph) => {
+		return paragraph.trim() ? wrapText(paragraph, maxCharacters) : [""];
+	});
+}
+
 function text(
 	commands: string[],
 	value: string,
@@ -127,6 +145,35 @@ function strokeRoundedRect(commands: string[], x: number, y: number, width: numb
 	commands.push(`${color} RG 0.8 w S`);
 }
 
+function roundedTopRectPath(commands: string[], x: number, y: number, width: number, height: number, radius: number) {
+	const corner = radius * 0.55228475;
+	commands.push(
+		`${x} ${y} m ${x + width} ${y} l ${x + width} ${y + height - radius} l ${x + width} ${y + height - radius + corner} ${x + width - radius + corner} ${y + height} ${x + width - radius} ${y + height} c ${x + radius} ${y + height} l ${x + radius - corner} ${y + height} ${x} ${y + height - radius + corner} ${x} ${y + height - radius} c h`,
+	);
+}
+
+function fillRoundedTopRect(commands: string[], x: number, y: number, width: number, height: number, radius: number, color: string) {
+	roundedTopRectPath(commands, x, y, width, height, radius);
+	commands.push(`${color} rg f`);
+}
+
+function roundedBottomRectPath(commands: string[], x: number, y: number, width: number, height: number, radius: number) {
+	const corner = radius * 0.55228475;
+	commands.push(
+		`${x} ${y + height} m ${x + width} ${y + height} l ${x + width} ${y + radius} l ${x + width} ${y + radius - corner} ${x + width - radius + corner} ${y} ${x + width - radius} ${y} c ${x + radius} ${y} l ${x + radius - corner} ${y} ${x} ${y + radius - corner} ${x} ${y + radius} c h`,
+	);
+}
+
+function fillRoundedBottomRect(commands: string[], x: number, y: number, width: number, height: number, radius: number, color: string) {
+	roundedBottomRectPath(commands, x, y, width, height, radius);
+	commands.push(`${color} rg f`);
+}
+
+function strokeRoundedBottomRect(commands: string[], x: number, y: number, width: number, height: number, radius: number, color = border) {
+	roundedBottomRectPath(commands, x, y, width, height, radius);
+	commands.push(`${color} RG 0.8 w S`);
+}
+
 function addressFromSnapshot(snapshot: Record<string, unknown>) {
 	return [
 		asString(snapshot.street),
@@ -150,6 +197,7 @@ export function createInvoicePdf(data: InvoicePdfData) {
 	const taxId = asString(data.company.taxId);
 	const companyId = asString(data.contractor.companyIdentifier);
 	const recipientTaxId = asString(data.contractor.taxId);
+	const accent = pdfColorFromHex(asString(data.company.invoiceColor));
 	const paymentLines = [
 		["Beneficiary", asString(data.company.paymentBeneficiary)],
 		["Bank", asString(data.company.paymentBankName)],
@@ -162,18 +210,15 @@ export function createInvoicePdf(data: InvoicePdfData) {
 		? data.items
 		: [{ description: "Service item", quantity: 1, unitPriceCents: data.totalCents }];
 
-	fillRect(commands, 0, pageHeight - 7, pageWidth, 7, teal);
+	fillRect(commands, 0, pageHeight - 7, pageWidth, 7, accent);
 
-	fillRoundedRect(commands, 32, 777, 28, 28, 7, teal);
-	text(commands, "T", 42, 786, 13, true, "left", "1 1 1");
-	text(commands, "INTERNATIONAL SERVICES", 68, 787, 8, true, "left", teal);
 	wrapText(companyName, 24)
 		.slice(0, 2)
 		.forEach((value, index) => {
 			text(commands, value, 32, 746 - index * 24, 17, true);
 		});
 
-	text(commands, "INVOICE", 563, 793, 9, true, "right", teal);
+	text(commands, "INVOICE", 563, 793, 9, true, "right", accent);
 	text(commands, data.invoiceNumber, 563, 764, 19, true, "right");
 	text(commands, "Issue date:", 490, 734, 9, true, "right", slate);
 	text(commands, formatDate(data.issueDate), 563, 734, 9, false, "right", slate);
@@ -184,7 +229,7 @@ export function createInvoicePdf(data: InvoicePdfData) {
 	strokeRoundedRect(commands, 32, 536, 254, 154, 8);
 	fillRoundedRect(commands, 309, 536, 254, 154, 8, "1 1 1");
 	strokeRoundedRect(commands, 309, 536, 254, 154, 8);
-	text(commands, "BILL FROM - SELLER", 48, 662, 8, true, "left", teal);
+	text(commands, "BILL FROM - SELLER", 48, 662, 8, true, "left", accent);
 	wrapText(legalName, 29)
 		.slice(0, 2)
 		.forEach((value, index) => {
@@ -198,7 +243,7 @@ export function createInvoicePdf(data: InvoicePdfData) {
 	if (taxId) {
 		text(commands, `Tax ID (CNPJ): ${taxId}`, 48, 549, 9, false, "left", slate);
 	}
-	text(commands, "BILL TO - BUYER", 325, 662, 8, true, "left", teal);
+	text(commands, "BILL TO - BUYER", 325, 662, 8, true, "left", accent);
 	wrapText(data.clientName || "Contractor name", 29)
 		.slice(0, 2)
 		.forEach((value, index) => {
@@ -221,31 +266,35 @@ export function createInvoicePdf(data: InvoicePdfData) {
 	const tableLeft = 32;
 	const tableRight = 563;
 	const tableTop = 516;
-	fillRoundedRect(commands, tableLeft, tableTop - 29, tableRight - tableLeft, 29, 7, paleBlue);
+	fillRoundedTopRect(commands, tableLeft, tableTop - 29, tableRight - tableLeft, 29, 7, paleBlue);
 	text(commands, "DESCRIPTION OF SERVICES", 44, tableTop - 18, 8, true, "left", "0.09 0.27 0.35");
 	text(commands, "QTY", 337, tableTop - 18, 8, true, "right", "0.09 0.27 0.35");
 	text(commands, "RATE", 438, tableTop - 18, 8, true, "right", "0.09 0.27 0.35");
 	text(commands, "AMOUNT", 551, tableTop - 18, 8, true, "right", "0.09 0.27 0.35");
 
 	let rowY = tableTop - 29;
-	for (const item of items) {
+	items.forEach((item, index) => {
 		const description = wrapText(item.description || "Service item", 48).slice(0, 2);
 		const rowHeight = Math.max(40, description.length * 13 + 20);
 		rowY -= rowHeight;
-		strokeRect(commands, tableLeft, rowY, tableRight - tableLeft, rowHeight);
+		if (index === items.length - 1) {
+			strokeRoundedBottomRect(commands, tableLeft, rowY, tableRight - tableLeft, rowHeight, 7);
+		} else {
+			strokeRect(commands, tableLeft, rowY, tableRight - tableLeft, rowHeight);
+		}
 		description.forEach((value, index) => {
 			text(commands, value, 44, rowY + rowHeight - 22 - index * 13, 9, index === 0);
 		});
 		text(commands, String(item.quantity), 337, rowY + rowHeight - 22, 9, false, "right", slate);
 		text(commands, formatMoney(item.unitPriceCents, data.currency), 438, rowY + rowHeight - 22, 9, false, "right", slate);
 		text(commands, formatMoney(item.quantity * item.unitPriceCents, data.currency), 551, rowY + rowHeight - 22, 9, true, "right");
-	}
+	});
 
 	const totalLeft = 338;
 	const totalBottom = rowY - 76;
 	fillRoundedRect(commands, totalLeft, totalBottom, 225, 51, 7, totalBlue);
 	strokeRoundedRect(commands, totalLeft, totalBottom, 225, 51, 7, "0.73 0.83 0.87");
-	fillRect(commands, totalLeft, totalBottom, 225, 26, teal);
+	fillRoundedBottomRect(commands, totalLeft, totalBottom, 225, 26, 7, accent);
 	text(commands, "Subtotal", totalLeft + 12, totalBottom + 35, 9, false, "left", slate);
 	text(commands, formatMoney(data.totalCents, data.currency), 551, totalBottom + 35, 9, false, "right", slate);
 	text(commands, "Total due", totalLeft + 12, totalBottom + 10, 10, true, "left", "1 1 1");
@@ -255,23 +304,23 @@ export function createInvoicePdf(data: InvoicePdfData) {
 	const paymentBottom = Math.max(84, paymentTop - 122);
 	fillRoundedRect(commands, 32, paymentBottom, 531, paymentTop - paymentBottom, 8, "1 1 1");
 	strokeRoundedRect(commands, 32, paymentBottom, 531, paymentTop - paymentBottom, 8);
-	text(commands, "PAYMENT INSTRUCTIONS", 48, paymentTop - 20, 8, true, "left", teal);
+	text(commands, "PAYMENT INSTRUCTIONS", 48, paymentTop - 20, 8, true, "left", accent);
 	text(commands, `Please include ${data.invoiceNumber} as your payment reference. Payment is due by ${formatDate(data.dueDate)} in ${data.currency}.`, 48, paymentTop - 39, 8.5, false, "left", slate);
 	paymentLines.slice(0, 5).forEach(([label, value], index) => {
 		text(commands, `${label}:`, 48, paymentTop - 61 - index * 14, 8.5, true, "left", slate);
 		text(commands, value, 103, paymentTop - 61 - index * 14, 8.5, false, "left", slate);
 	});
 	if (data.notes) {
-		const notesBottom = 34;
-		const notesTop = Math.max(notesBottom + 42, paymentBottom - 12);
+		const noteLines = wrapTextPreservingLineBreaks(data.notes, 91);
+		const notesHeight = 30 + noteLines.length * 12;
+		const notesTop = paymentBottom - 14;
+		const notesBottom = notesTop - notesHeight;
 		fillRect(commands, 32, notesBottom, 531, notesTop - notesBottom, "0.957 0.98 0.984");
-		fillRect(commands, 32, notesBottom, 3, notesTop - notesBottom, teal);
-		text(commands, "NOTES", 48, notesTop - 14, 8, true, "left", teal);
-		wrapText(data.notes, 91)
-			.slice(0, 1)
-			.forEach((value, index) => {
-				text(commands, value, 48, notesTop - 29 - index * 12, 8, false, "left", slate);
-			});
+		fillRect(commands, 32, notesBottom, 3, notesTop - notesBottom, accent);
+		text(commands, "NOTES", 48, notesTop - 14, 8, true, "left", accent);
+		noteLines.forEach((value, index) => {
+			text(commands, value, 48, notesTop - 29 - index * 12, 8, false, "left", slate);
+		});
 	}
 
 	text(commands, `${companyName} - ${data.invoiceNumber}`, pageWidth / 2, 20, 8, false, "left", "0.48 0.58 0.7");

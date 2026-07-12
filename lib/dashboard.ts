@@ -1,7 +1,8 @@
+import { formatCnpj as formatCnpjValue, normalizeCnpj } from "@/lib/cnpj";
 import type {
-  CompanyProfileInput,
-  ContractorInput,
-  CreateInvoiceInput
+	CompanyProfileInput,
+	ContractorInput,
+	CreateInvoiceInput
 } from "@/lib/validations";
 
 export type Invoice = {
@@ -27,6 +28,8 @@ export type CompanyProfile = {
   city: string;
   state: string;
   country: string;
+  logoPath?: string | null;
+  invoiceColor: string;
   paymentBeneficiary?: string | null;
   paymentBankName?: string | null;
   paymentAccountNumber?: string | null;
@@ -104,14 +107,29 @@ export const currencyOptions = [
   { value: "EUR", label: "Euro", symbol: "€" }
 ] as const;
 
+function toDateInputValue(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+function getDefaultDueDate() {
+  const dueDate = new Date();
+  dueDate.setDate(dueDate.getDate() + 30);
+
+  return toDateInputValue(dueDate);
+}
+
 export const initialInvoiceForm: InvoiceForm = {
   contractorMode: "saved",
   contractorId: "",
   clientName: "",
   clientEmail: "",
   currency: "GBP",
-  issueDate: new Date().toISOString().slice(0, 10),
-  dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+  issueDate: toDateInputValue(new Date()),
+  dueDate: getDefaultDueDate(),
   notes: "",
   items: [
     {
@@ -180,34 +198,23 @@ export function normalizeDigits(value: string) {
   return value.replace(/\D/g, "");
 }
 
+export function normalizeCentsInput(value: string) {
+  return normalizeDigits(value).replace(/^0+(?=\d)/, "");
+}
+
+export function formatCentsInput(value: string) {
+  return new Intl.NumberFormat("en-GB", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(Number(normalizeCentsInput(value) || 0) / 100);
+}
+
 export function limitDigits(value: string, maxLength: number) {
   return normalizeDigits(value).slice(0, maxLength);
 }
 
 export function formatCnpj(value: string) {
-  const digits = limitDigits(value, 14);
-
-  if (!digits) {
-    return "";
-  }
-
-  if (digits.length <= 2) {
-    return digits;
-  }
-
-  if (digits.length <= 5) {
-    return `${digits.slice(0, 2)}.${digits.slice(2)}`;
-  }
-
-  if (digits.length <= 8) {
-    return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5)}`;
-  }
-
-  if (digits.length <= 12) {
-    return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5, 8)}/${digits.slice(8)}`;
-  }
-
-  return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5, 8)}/${digits.slice(8, 12)}-${digits.slice(12)}`;
+	return formatCnpjValue(value);
 }
 
 export function formatCep(value: string) {
@@ -363,8 +370,47 @@ export async function lookupCep(cep: string) {
   return response.json();
 }
 
+export async function updateCompanyBranding(payload: Pick<CompanyProfile, "invoiceColor">) {
+  const response = await fetch("/api/company-profile/branding", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => null);
+    throw new Error(error?.message || "Unable to save invoice branding.");
+  }
+
+  return response.json();
+}
+
+export async function uploadCompanyLogo(file: File) {
+  const formData = new FormData();
+  formData.set("logo", file);
+  const response = await fetch("/api/company-profile/logo", {
+    method: "POST",
+    body: formData
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => null);
+    throw new Error(error?.message || "Unable to upload logo.");
+  }
+
+  return response.json() as Promise<{ logoPath: string }>;
+}
+
+export async function removeCompanyLogo() {
+  const response = await fetch("/api/company-profile/logo", { method: "DELETE" });
+
+  if (!response.ok) {
+    throw new Error("Unable to remove logo.");
+  }
+}
+
 export async function lookupCnpj(cnpj: string) {
-  const response = await fetch(`/api/cnpj/${normalizeDigits(cnpj)}`);
+	const response = await fetch(`/api/cnpj/${normalizeCnpj(cnpj)}`);
 
   if (!response.ok) {
     throw new Error("CNPJ lookup failed.");
