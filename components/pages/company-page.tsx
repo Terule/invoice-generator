@@ -11,7 +11,13 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { DEFAULT_INVOICE_COLOR, isAcceptedLogo, MAX_LOGO_SIZE_LABEL } from "@/lib/branding";
+import {
+  DEFAULT_INVOICE_COLOR,
+  isAcceptedLogo,
+  MAX_LOGO_DIMENSION_PX,
+  MAX_LOGO_DIMENSIONS_LABEL,
+  MAX_LOGO_SIZE_LABEL
+} from "@/lib/branding";
 import { formatCnpj, removeCompanyLogo, updateCompanyBranding, updatePaymentDetails, uploadCompanyLogo } from "@/lib/dashboard";
 import type { PaymentDetailsInput } from "@/lib/validations";
 
@@ -33,6 +39,17 @@ function brandingFormFromCompany(company: ReturnType<typeof useDashboardData>["b
     invoiceColor: company?.invoiceColor ?? DEFAULT_INVOICE_COLOR,
     logoPath: company?.logoPath ?? null
   };
+}
+
+async function isSquareLogo(file: File) {
+  const image = await createImageBitmap(file);
+  const isValid =
+    image.width === image.height &&
+    image.width <= MAX_LOGO_DIMENSION_PX &&
+    image.height <= MAX_LOGO_DIMENSION_PX;
+
+  image.close();
+  return isValid;
 }
 
 export function CompanyPageContent() {
@@ -124,6 +141,18 @@ export function CompanyPageContent() {
     }
 
     try {
+      if (!(await isSquareLogo(file))) {
+        setBrandingError(`Choose a square logo no larger than ${MAX_LOGO_DIMENSIONS_LABEL}.`);
+        event.target.value = "";
+        return;
+      }
+    } catch {
+      setBrandingError("We could not read that image. Choose a PNG, JPEG, or WebP logo.");
+      event.target.value = "";
+      return;
+    }
+
+    try {
       await uploadLogoMutation.mutateAsync(file);
     } catch (error) {
       setBrandingError(error instanceof Error ? error.message : "Unable to upload logo.");
@@ -180,7 +209,7 @@ export function CompanyPageContent() {
 
       <Card className="animate-fade-in-up stagger-1">
         <SectionHeader
-          description={`Used on future invoice previews and PDFs. Logo limit: ${MAX_LOGO_SIZE_LABEL}.`}
+          description="Used on future invoice previews and PDFs."
           icon={Palette}
           title="Invoice Branding"
         />
@@ -198,6 +227,9 @@ export function CompanyPageContent() {
               <div className="min-w-0 flex-1">
                 <Label htmlFor="company-logo">Company logo</Label>
                 <Input accept="image/png,image/jpeg,image/webp" className="mt-2" disabled={uploadLogoMutation.isPending} id="company-logo" onChange={handleLogoChange} type="file" />
+                <p className="mt-2 text-xs leading-relaxed text-foreground/60">
+                  PNG, JPEG, or WebP only. Maximum file size: {MAX_LOGO_SIZE_LABEL}. Use a square 1:1 image, up to {MAX_LOGO_DIMENSIONS_LABEL}.
+                </p>
               </div>
               {brandingForm.logoPath ? (
                 <Button aria-label="Remove company logo" className="h-10 w-10 shrink-0 px-0" disabled={removeLogoMutation.isPending} onClick={handleLogoRemove} type="button" variant="ghost">

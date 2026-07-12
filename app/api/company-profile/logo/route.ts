@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { isAcceptedLogo, MAX_LOGO_SIZE_LABEL } from "@/lib/branding";
 import { prisma } from "@/lib/db/prisma";
+import { hasAcceptedLogoDimensions } from "@/lib/logo-validation";
 import { fetchSeaweedFs } from "@/lib/seaweedfs";
 
 function extensionFor(file: File) {
@@ -62,6 +63,13 @@ export async function POST(request: Request) {
   if (!(file instanceof File) || !isAcceptedLogo(file)) {
     return NextResponse.json(
       { message: `Choose a PNG, JPEG, or WebP logo up to ${MAX_LOGO_SIZE_LABEL}.` },
+      { status: 400 }
+    );
+  }
+
+  if (!(await hasAcceptedLogoDimensions(file))) {
+    return NextResponse.json(
+      { message: "Choose a square logo no larger than 2,000 x 2,000 px." },
       { status: 400 }
     );
   }
