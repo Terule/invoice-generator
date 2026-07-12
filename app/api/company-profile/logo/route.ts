@@ -80,9 +80,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: "Company profile not found." }, { status: 404 });
   }
 
-  const logoPath = `/company-logos/${session.user.id}/${crypto.randomUUID()}.${extensionFor(file)}`;
+  // One stable object per company prevents old logo uploads from accumulating.
+  const logoPath = `/company-logos/${session.user.id}/logo`;
   const upload = new FormData();
-  upload.set("file", file, file.name);
+  upload.set("file", file, `logo.${extensionFor(file)}`);
   let uploaded: Response;
 
   try {
@@ -106,7 +107,7 @@ export async function POST(request: Request) {
     data: { logoPath }
   });
 
-  if (profile.logoPath) {
+  if (profile.logoPath && profile.logoPath !== logoPath) {
     await fetchSeaweedFs(profile.logoPath, { method: "DELETE" }).catch(() => undefined);
   }
 

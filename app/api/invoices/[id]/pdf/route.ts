@@ -30,7 +30,7 @@ export async function GET(
 		return NextResponse.json({ message: "Invoice not found" }, { status: 404 });
 	}
 
-	const pdf = createInvoicePdf({
+	const pdf = await createInvoicePdf({
 		invoiceNumber: invoice.invoiceNumber,
 		currency: invoice.currency,
 		issueDate: invoice.issueDate,

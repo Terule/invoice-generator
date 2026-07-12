@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
-import { Building2, ImageUp, Landmark, MapPinned, Palette, Pencil, Trash2 } from "lucide-react";
+import { Building2, ImageUp, Landmark, MapPinned, Palette, Pencil, X } from "lucide-react";
 import Image from "next/image";
 import { type ChangeEvent, type FormEvent, useState } from "react";
 
@@ -217,12 +217,25 @@ export function CompanyPageContent() {
         {company ? (
           <form className="mt-6 space-y-5" onSubmit={handleBrandingSubmit}>
             <div className="flex items-center gap-4">
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-secondary/60">
+              <div className="relative h-16 w-16 shrink-0">
+                <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-secondary/60">
+                  {brandingForm.logoPath ? (
+                    <Image alt="Company logo preview" className="h-full w-full object-contain" height={64} src={`/api/company-profile/logo?path=${encodeURIComponent(brandingForm.logoPath)}`} unoptimized width={64} />
+                  ) : (
+                    <ImageUp className="h-6 w-6 text-foreground/40" />
+                  )}
+                </div>
                 {brandingForm.logoPath ? (
-                  <Image alt="Company logo preview" className="h-full w-full object-contain" height={64} src={`/api/company-profile/logo?path=${encodeURIComponent(brandingForm.logoPath)}`} unoptimized width={64} />
-                ) : (
-                  <ImageUp className="h-6 w-6 text-foreground/40" />
-                )}
+                  <Button
+                    aria-label="Remove company logo"
+                    className="absolute -right-2 -top-2 h-7 w-7 rounded-full border border-rose-300/50 bg-rose-500 p-0 text-white shadow-lg hover:bg-rose-400"
+                    disabled={removeLogoMutation.isPending}
+                    onClick={handleLogoRemove}
+                    type="button"
+                  >
+                    <X className="h-4 w-4" strokeWidth={3} />
+                  </Button>
+                ) : null}
               </div>
               <div className="min-w-0 flex-1">
                 <Label htmlFor="company-logo">Company logo</Label>
@@ -231,11 +244,6 @@ export function CompanyPageContent() {
                   PNG, JPEG, or WebP only. Maximum file size: {MAX_LOGO_SIZE_LABEL}. Use a square 1:1 image, up to {MAX_LOGO_DIMENSIONS_LABEL}.
                 </p>
               </div>
-              {brandingForm.logoPath ? (
-                <Button aria-label="Remove company logo" className="h-10 w-10 shrink-0 px-0" disabled={removeLogoMutation.isPending} onClick={handleLogoRemove} type="button" variant="ghost">
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              ) : null}
             </div>
 
             <div className="flex items-end gap-4">

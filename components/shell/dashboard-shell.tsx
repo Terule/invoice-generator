@@ -109,9 +109,21 @@ export function DashboardShell({ children }: { children: ReactNode }) {
 						<div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
 							<div className="flex flex-col gap-4 xl:flex-1 xl:flex-row xl:items-center xl:justify-between">
 								<div className="min-w-0">
-									<p className="font-display text-2xl font-semibold text-white">
-										Invoice Manager
-									</p>
+									<div className="flex items-center gap-3">
+										{companyProfile?.logoPath ? (
+											<Image
+												alt="Company logo"
+												className="h-10 w-10 rounded-xl border border-white/10 bg-white object-contain p-1"
+												height={40}
+												src="/api/company-profile/logo"
+												unoptimized
+												width={40}
+											/>
+										) : null}
+										<p className="font-display text-2xl font-semibold text-white">
+											Invoice Manager
+										</p>
+									</div>
 									<p className="mt-1 truncate text-sm text-foreground/62">
 										{companyProfile?.tradingName ||
 											companyProfile?.legalName ||

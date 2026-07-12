@@ -206,9 +206,36 @@ function addressFromSnapshot(snapshot: Record<string, unknown>) {
 		.join(", ");
 }
 
-export function createInvoicePdf(data: InvoicePdfData) {
+async function loadCompanyLogo(company: Record<string, unknown>) {
+	const logoPath = asString(company.logoPath);
+
+	if (!logoPath) {
+		return null;
+	}
+
+	try {
+		const response = await fetchSeaweedFs(logoPath, { cache: "no-store" });
+
+		if (!response.ok) {
+			return null;
+		}
+
+		const logo = await sharp(Buffer.from(await response.arrayBuffer()))
+			.flatten({ background: "#ffffff" })
+			.resize(96, 96, { fit: "inside", withoutEnlargement: true })
+			.jpeg({ quality: 90 })
+			.toBuffer({ resolveWithObject: true });
+
+		return { data: logo.data, height: logo.info.height, width: logo.info.width };
+	} catch {
+		return null;
+	}
+}
+
+export async function createInvoicePdf(data: InvoicePdfData) {
 	const commands: string[] = [];
 	const companyName = asString(data.company.tradingName) || asString(data.company.legalName) || "Your company";
+	const companyNameLines = wrapText(companyName, 24).slice(0, 2);
 	const legalName = asString(data.company.legalName) || companyName;
 	const companyAddress = addressFromSnapshot(data.company);
 	const recipientAddress = addressFromSnapshot(data.contractor);
@@ -228,13 +255,18 @@ export function createInvoicePdf(data: InvoicePdfData) {
 	const items = data.items.length
 		? data.items
 		: [{ description: "Service item", quantity: 1, unitPriceCents: data.totalCents }];
+	const logo = await loadCompanyLogo(data.company);
+	const logoSize = companyNameLines.length > 1 ? 44 : 20;
+	const companyNameX = logo ? 32 + logoSize + 10 : 32;
 
 	fillRect(commands, 0, pageHeight - 7, pageWidth, 7, accent);
 
-	wrapText(companyName, 24)
-		.slice(0, 2)
-		.forEach((value, index) => {
-			text(commands, value, 32, 764 - index * 24, 17, true);
+	if (logo) {
+		commands.push(`q ${logoSize} 0 0 ${logoSize} 32 ${companyNameLines.length > 1 ? 728 : 748} cm /Logo Do Q`);
+	}
+
+	companyNameLines.forEach((value, index) => {
+			text(commands, value, companyNameX, 764 - index * 24, 17, true);
 		});
 
 	text(commands, "INVOICE", 563, 793, 9, true, "right", accent);
@@ -345,13 +377,17 @@ export function createInvoicePdf(data: InvoicePdfData) {
 	text(commands, `${companyName} - ${data.invoiceNumber}`, pageWidth / 2, 20, 8, false, "center", "0.48 0.58 0.7");
 
 	const content = commands.join("\n");
+	const logoObject = logo
+		? `<< /Type /XObject /Subtype /Image /Width ${logo.width} /Height ${logo.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${logo.data.length} >>\nstream\n${logo.data.toString("latin1")}\nendstream`
+		: null;
 	const objects = [
 		"<< /Type /Catalog /Pages 2 0 R >>",
 		"<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
-		`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageWidth} ${pageHeight}] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> >> /Contents 6 0 R >>`,
+		`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageWidth} ${pageHeight}] /Resources << /Font << /F1 4 0 R /F2 5 0 R >>${logo ? " /XObject << /Logo 7 0 R >>" : ""} >> /Contents 6 0 R >>`,
 		"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>",
 		"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>",
 		`<< /Length ${Buffer.byteLength(content, "latin1")} >>\nstream\n${content}\nendstream`,
+		...(logoObject ? [logoObject] : []),
 	];
 	let pdf = "%PDF-1.4\n%\xE2\xE3\xCF\xD3\n";
 	const offsets = [0];
@@ -371,3 +407,7 @@ export function createInvoicePdf(data: InvoicePdfData) {
 
 	return Buffer.from(pdf, "latin1");
 }
+
+import sharp from "sharp";
+
+import { fetchSeaweedFs } from "@/lib/seaweedfs";
