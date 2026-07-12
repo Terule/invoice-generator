@@ -228,7 +228,7 @@ export function CompanyPageContent() {
         ) : null}
       </Card>
 
-      <Card className="animate-fade-in-up stagger-2">
+      <Card className="animate-fade-in-up stagger-2 xl:order-4">
         <SectionHeader
           description="Your fixed business address for future invoices."
           icon={MapPinned}
@@ -250,7 +250,7 @@ export function CompanyPageContent() {
         ) : null}
       </Card>
 
-      <Card className="animate-fade-in-up stagger-3 xl:col-span-2">
+      <Card className="animate-fade-in-up stagger-3 xl:order-3">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <SectionHeader
             description="Shown on future invoices. Issued invoices keep their original payment details."

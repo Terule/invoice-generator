@@ -8,6 +8,7 @@ import {
 	Globe,
 	Home,
 	Lock,
+	Palette,
 	Users,
 } from "lucide-react";
 import Link from "next/link";
@@ -112,7 +113,11 @@ export function LoginScreen() {
 						</li>
 						<li className="flex items-start gap-3">
 							<Building2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-							<span>Company profile with CNPJ lookup and payment details.</span>
+							<span>Company setup with validated CNPJ lookup and payment details.</span>
+						</li>
+						<li className="flex items-start gap-3">
+							<Palette className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+							<span>Personalized invoices with your logo and brand color.</span>
 						</li>
 						<li className="flex items-start gap-3">
 							<Users className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
