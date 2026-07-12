@@ -33,6 +33,7 @@ export type CompanyProfile = {
   paymentBeneficiary?: string | null;
   paymentBankName?: string | null;
   paymentAccountNumber?: string | null;
+  paymentSortCode?: string | null;
   paymentIban?: string | null;
   paymentSwiftBic?: string | null;
   paymentPixKey?: string | null;
@@ -169,6 +170,7 @@ export const initialCompanyForm: CompanyProfileInput = {
   paymentBeneficiary: "",
   paymentBankName: "",
   paymentAccountNumber: "",
+  paymentSortCode: "",
   paymentIban: "",
   paymentSwiftBic: "",
   paymentPixKey: "",

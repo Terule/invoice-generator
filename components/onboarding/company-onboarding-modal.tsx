@@ -303,9 +303,13 @@ export function CompanyOnboardingModal({
                     <Input value={companyForm.paymentBankName} onChange={(event) => updateCompanyForm("paymentBankName", event.target.value)} />
                   </div>
                   <div className="space-y-2">
-                    <Label>Account number</Label>
-                    <Input value={companyForm.paymentAccountNumber} onChange={(event) => updateCompanyForm("paymentAccountNumber", event.target.value)} />
-                  </div>
+                      <Label>Account number</Label>
+                      <Input value={companyForm.paymentAccountNumber} onChange={(event) => updateCompanyForm("paymentAccountNumber", event.target.value)} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Sort code</Label>
+                      <Input value={companyForm.paymentSortCode} onChange={(event) => updateCompanyForm("paymentSortCode", event.target.value)} />
+                    </div>
                   <div className="space-y-2">
                     <Label>IBAN</Label>
                     <Input value={companyForm.paymentIban} onChange={(event) => updateCompanyForm("paymentIban", event.target.value)} />

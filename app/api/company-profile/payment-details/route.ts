@@ -32,6 +32,7 @@ export async function PATCH(request: Request) {
 			paymentBeneficiary: optionalValue(parsed.data.paymentBeneficiary),
 			paymentBankName: optionalValue(parsed.data.paymentBankName),
 			paymentAccountNumber: optionalValue(parsed.data.paymentAccountNumber),
+			paymentSortCode: optionalValue(parsed.data.paymentSortCode),
 			paymentIban: optionalValue(parsed.data.paymentIban),
 			paymentSwiftBic: optionalValue(parsed.data.paymentSwiftBic),
 			paymentPixKey: optionalValue(parsed.data.paymentPixKey),

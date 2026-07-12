@@ -17,6 +17,7 @@ type InvoicePaperProps = {
     paymentBeneficiary?: string | null;
     paymentBankName?: string | null;
     paymentAccountNumber?: string | null;
+    paymentSortCode?: string | null;
     paymentIban?: string | null;
     paymentSwiftBic?: string | null;
     paymentPixKey?: string | null;
@@ -72,7 +73,7 @@ export function InvoicePaper({
     <article className="invoice-paper flex min-h-[842px] w-[595px] shrink-0 flex-col overflow-hidden border-t-[7px] bg-[#fffefd] text-slate-900 shadow-[0_24px_70px_rgba(0,0,0,0.28)]" style={{ borderTopColor: invoiceColor }}>
       <header className="flex items-start justify-between gap-6 px-8 pb-5 pt-6">
         <div className="min-w-0 max-w-[60%]">
-          <div className="flex items-start gap-2">
+          <div className="flex items-start gap-2 pt-4">
             <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-slate-100">
               {sender?.logoUrl ? <Image alt="Company logo" className="h-full w-full object-contain" height={28} src={sender.logoUrl} unoptimized width={28} /> : null}
             </div>
@@ -157,6 +158,7 @@ export function InvoicePaper({
         {sender?.paymentBeneficiary ? <p className="mt-2 text-[10px] text-slate-600"><span className="font-semibold text-slate-800">Beneficiary:</span> {sender.paymentBeneficiary}</p> : null}
         {sender?.paymentBankName ? <p className="mt-1 text-[10px] text-slate-600"><span className="font-semibold text-slate-800">Bank:</span> {sender.paymentBankName}</p> : null}
         {sender?.paymentAccountNumber ? <p className="mt-1 text-[10px] text-slate-600"><span className="font-semibold text-slate-800">Account:</span> {sender.paymentAccountNumber}</p> : null}
+        {sender?.paymentSortCode ? <p className="mt-1 text-[10px] text-slate-600"><span className="font-semibold text-slate-800">Sort code:</span> {sender.paymentSortCode}</p> : null}
         {sender?.paymentIban ? <p className="mt-1 text-[10px] text-slate-600"><span className="font-semibold text-slate-800">IBAN:</span> {sender.paymentIban}</p> : null}
         {sender?.paymentSwiftBic ? <p className="mt-1 text-[10px] text-slate-600"><span className="font-semibold text-slate-800">SWIFT / BIC:</span> {sender.paymentSwiftBic}</p> : null}
         {sender?.paymentPixKey ? <p className="mt-1 text-[10px] text-slate-600"><span className="font-semibold text-slate-800">PIX:</span> {sender.paymentPixKey}</p> : null}

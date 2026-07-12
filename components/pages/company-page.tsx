@@ -20,6 +20,7 @@ function paymentFormFromCompany(company: ReturnType<typeof useDashboardData>["bo
     paymentBeneficiary: company?.paymentBeneficiary ?? "",
     paymentBankName: company?.paymentBankName ?? "",
     paymentAccountNumber: company?.paymentAccountNumber ?? "",
+    paymentSortCode: company?.paymentSortCode ?? "",
     paymentIban: company?.paymentIban ?? "",
     paymentSwiftBic: company?.paymentSwiftBic ?? "",
     paymentPixKey: company?.paymentPixKey ?? "",
@@ -271,6 +272,7 @@ export function CompanyPageContent() {
               <PaymentInput required label="Beneficiary name" value={paymentForm.paymentBeneficiary} onChange={(value) => updatePaymentField("paymentBeneficiary", value)} />
               <PaymentInput label="Bank name" value={paymentForm.paymentBankName} onChange={(value) => updatePaymentField("paymentBankName", value)} />
               <PaymentInput label="Account number" value={paymentForm.paymentAccountNumber} onChange={(value) => updatePaymentField("paymentAccountNumber", value)} />
+              <PaymentInput label="Sort code" value={paymentForm.paymentSortCode} onChange={(value) => updatePaymentField("paymentSortCode", value)} />
               <PaymentInput label="IBAN" value={paymentForm.paymentIban} onChange={(value) => updatePaymentField("paymentIban", value)} />
               <PaymentInput label="SWIFT / BIC" value={paymentForm.paymentSwiftBic} onChange={(value) => updatePaymentField("paymentSwiftBic", value)} />
               <PaymentInput label="PIX key" value={paymentForm.paymentPixKey} onChange={(value) => updatePaymentField("paymentPixKey", value)} />
@@ -313,6 +315,7 @@ function PaymentDetailsSummary({ company }: { company: NonNullable<ReturnType<ty
     ["Beneficiary", company.paymentBeneficiary],
     ["Bank", company.paymentBankName],
     ["Account", company.paymentAccountNumber],
+    ["Sort code", company.paymentSortCode],
     ["IBAN", company.paymentIban],
     ["SWIFT / BIC", company.paymentSwiftBic],
     ["PIX", company.paymentPixKey]

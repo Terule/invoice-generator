@@ -220,6 +220,7 @@ export function createInvoicePdf(data: InvoicePdfData) {
 		["Beneficiary", asString(data.company.paymentBeneficiary)],
 		["Bank", asString(data.company.paymentBankName)],
 		["Account", asString(data.company.paymentAccountNumber)],
+		["Sort code", asString(data.company.paymentSortCode)],
 		["IBAN", asString(data.company.paymentIban)],
 		["SWIFT / BIC", asString(data.company.paymentSwiftBic)],
 		["PIX", asString(data.company.paymentPixKey)],
@@ -233,7 +234,7 @@ export function createInvoicePdf(data: InvoicePdfData) {
 	wrapText(companyName, 24)
 		.slice(0, 2)
 		.forEach((value, index) => {
-			text(commands, value, 32, 746 - index * 24, 17, true);
+			text(commands, value, 32, 764 - index * 24, 17, true);
 		});
 
 	text(commands, "INVOICE", 563, 793, 9, true, "right", accent);

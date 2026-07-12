@@ -125,6 +125,7 @@ export async function POST(request: Request) {
 				paymentBeneficiary: companyProfile.paymentBeneficiary,
 				paymentBankName: companyProfile.paymentBankName,
 				paymentAccountNumber: companyProfile.paymentAccountNumber,
+				paymentSortCode: companyProfile.paymentSortCode,
 				paymentIban: companyProfile.paymentIban,
 				paymentSwiftBic: companyProfile.paymentSwiftBic,
 				paymentPixKey: companyProfile.paymentPixKey,

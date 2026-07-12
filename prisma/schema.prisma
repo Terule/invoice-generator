@@ -116,6 +116,7 @@ model CompanyProfile {
   paymentBeneficiary String?
   paymentBankName String?
   paymentAccountNumber String?
+  paymentSortCode String?
   paymentIban    String?
   paymentSwiftBic String?
   paymentPixKey  String?

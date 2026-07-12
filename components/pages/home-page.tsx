@@ -325,6 +325,7 @@ export function HomePageContent() {
                     paymentBeneficiary: bootstrap.companyProfile.paymentBeneficiary,
                     paymentBankName: bootstrap.companyProfile.paymentBankName,
                     paymentAccountNumber: bootstrap.companyProfile.paymentAccountNumber,
+                    paymentSortCode: bootstrap.companyProfile.paymentSortCode,
                     paymentIban: bootstrap.companyProfile.paymentIban,
                     paymentSwiftBic: bootstrap.companyProfile.paymentSwiftBic,
                     paymentPixKey: bootstrap.companyProfile.paymentPixKey,

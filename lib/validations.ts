@@ -10,6 +10,7 @@ const paymentDetailsFields = z.object({
   paymentBeneficiary: z.string().trim().max(191).optional(),
   paymentBankName: z.string().trim().max(191).optional(),
   paymentAccountNumber: z.string().trim().max(191).optional(),
+  paymentSortCode: z.string().trim().max(191).optional(),
   paymentIban: z.string().trim().max(191).optional(),
   paymentSwiftBic: z.string().trim().max(191).optional(),
   paymentPixKey: z.string().trim().max(191).optional(),
