@@ -237,8 +237,8 @@ export function CompanyPageContent() {
   }
 
   return (
-    <section className="grid gap-6 xl:grid-cols-3">
-      <Card className="animate-fade-in-up">
+    <section className="grid gap-6 xl:grid-cols-2">
+      <Card className="animate-fade-in-up xl:row-span-2">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <SectionHeader
             description="Used for future invoices. Issued invoices remain immutable snapshots."
@@ -291,17 +291,33 @@ export function CompanyPageContent() {
                 <p className="text-xs uppercase tracking-[0.24em] text-foreground/55">Trading name</p>
                 <p className="mt-2 text-xl font-semibold">{company.tradingName}</p>
               </div>
-              <div className="rounded-3xl border border-white/10 bg-secondary/60 p-5">
-                <p className="text-xs uppercase tracking-[0.2em] text-foreground/55">Address</p>
-                <p className="mt-2 text-base font-semibold text-foreground">
-                  {company.street}, {company.number}
-                </p>
-                <p className="mt-1 text-sm text-foreground/72">
-                  {company.neighborhood}, {company.city} - {company.state}
-                </p>
-                <p className="text-sm text-foreground/72">
-                  {company.cep} · {company.country}
-                </p>
+              <div>
+                <p className="text-xs uppercase tracking-[0.24em] text-foreground/55">Street</p>
+                <p className="mt-2 text-xl font-semibold">{company.street}</p>
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-[0.24em] text-foreground/55">Number</p>
+                <p className="mt-2 text-xl font-semibold">{company.number}</p>
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-[0.24em] text-foreground/55">Neighborhood</p>
+                <p className="mt-2 text-xl font-semibold">{company.neighborhood}</p>
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-[0.24em] text-foreground/55">City</p>
+                <p className="mt-2 text-xl font-semibold">{company.city}</p>
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-[0.24em] text-foreground/55">State</p>
+                <p className="mt-2 text-xl font-semibold">{company.state}</p>
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-[0.24em] text-foreground/55">CEP</p>
+                <p className="mt-2 text-xl font-semibold">{formatCep(company.cep)}</p>
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-[0.24em] text-foreground/55">Country</p>
+                <p className="mt-2 text-xl font-semibold">{company.country}</p>
               </div>
             </div>
           )
