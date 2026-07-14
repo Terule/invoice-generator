@@ -224,7 +224,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
 					</div>
 				</Card>
 
-				<div className="mx-auto max-w-7xl px-4 pb-4 sm:px-6">
+				<div className="mx-auto max-w-384 px-4 pb-4 sm:px-6">
 					<div className="min-w-0">{children}</div>
 				</div>
 			</div>

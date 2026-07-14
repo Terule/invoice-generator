@@ -116,8 +116,8 @@ export function HomePageContent() {
   }
 
   return (
-    <section className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
-      <Card className="animate-fade-in-up self-start">
+    <section className="grid items-stretch gap-6 xl:grid-cols-[1.2fr_1fr]">
+      <Card className="animate-fade-in-up h-[calc(100svh-12rem)] min-h-115 overflow-auto xl:sticky xl:top-4">
         <div className="mb-6">
           <SectionHeader
             description="Fill the form and watch the preview update live."

@@ -133,8 +133,8 @@ export function ContractorsPageContent() {
   }
 
   return (
-    <section className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
-      <Card className="animate-fade-in-up">
+    <section className="grid items-stretch gap-6 xl:grid-cols-[0.8fr_1.2fr]">
+      <Card className="animate-fade-in-up h-full">
         <div className="mb-6">
           <SectionHeader
             description="Disable one to remove it from future dropdowns."
@@ -175,7 +175,7 @@ export function ContractorsPageContent() {
         </div>
       </Card>
 
-      <Card className="animate-fade-in-up stagger-1">
+      <Card className="animate-fade-in-up stagger-1 h-full">
         <div className="mb-6">
           <SectionHeader
             description="Keep the details you reuse often."
