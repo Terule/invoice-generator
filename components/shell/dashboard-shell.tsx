@@ -100,6 +100,16 @@ export function DashboardShell({ children }: { children: ReactNode }) {
 	const navItems = isAdminEmail(userEmail)
 		? [...baseNavItems, adminNavItem]
 		: baseNavItems;
+	const companyDisplayName =
+		companyProfile?.tradingName ||
+		companyProfile?.legalName ||
+		"International invoicing workspace";
+	const companyInitials = companyDisplayName
+		.split(" ")
+		.filter(Boolean)
+		.slice(0, 2)
+		.map((part) => part[0]?.toUpperCase() ?? "")
+		.join("");
 	const userInitials = userName
 		.split(" ")
 		.filter(Boolean)
@@ -114,32 +124,31 @@ export function DashboardShell({ children }: { children: ReactNode }) {
 			) : null}
 			<div className="min-h-screen bg-background">
 				<Card className="animate-fade-in-up sticky top-0 z-40 mb-6 rounded-none border-x-0 border-t-0 border-white/10 bg-[linear-gradient(135deg,rgba(19,29,43,0.95),rgba(18,47,39,0.92))] hover:border-white/10">
-					<div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 xl:flex-row xl:items-center xl:justify-between">
-							<div className="flex flex-col gap-4 xl:flex-1 xl:flex-row xl:items-center xl:justify-between">
-								<div className="min-w-0">
-									<div className="flex items-center gap-3">
-										{companyProfile?.logoPath ? (
-											<Image
-												alt="Company logo"
-												className="h-10 w-10 rounded-xl border border-white/10 bg-white object-contain p-1"
-												height={40}
-												src="/api/company-profile/logo"
-												unoptimized
-												width={40}
-											/>
-										) : null}
-										<p className="font-display text-2xl font-semibold text-white">
-											Invoice Manager
-										</p>
+					<div className="mx-auto grid max-w-7xl gap-4 px-4 py-4 sm:px-6 xl:grid-cols-[minmax(0,1fr)_auto_auto] xl:items-center">
+						<div className="min-w-0">
+							<p className="font-display text-2xl font-semibold text-white">
+								Invoice Manager
+							</p>
+							<div className="mt-2 flex min-w-0 items-center gap-3">
+								{companyProfile?.logoPath ? (
+									<Image
+										alt="Company logo"
+										className="h-10 w-10 rounded-xl border border-white/10 bg-white object-contain p-1"
+										height={40}
+										src="/api/company-profile/logo"
+										unoptimized
+										width={40}
+									/>
+								) : (
+									<div className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-xs font-semibold text-foreground/78">
+										{companyInitials || "IM"}
 									</div>
-									<p className="mt-1 truncate text-sm text-foreground/62">
-										{companyProfile?.tradingName ||
-											companyProfile?.legalName ||
-											"International invoicing workspace"}
-									</p>
-								</div>
+								)}
+								<p className="truncate text-sm text-foreground/70">{companyDisplayName}</p>
+							</div>
+						</div>
 
-								<nav className="flex flex-wrap gap-2">
+						<nav className="flex flex-wrap items-center justify-center gap-3 xl:justify-self-center">
 									{navItems.map((item) => {
 										const Icon = item.icon;
 										const active = pathname === item.href;
@@ -148,71 +157,70 @@ export function DashboardShell({ children }: { children: ReactNode }) {
 											<Link
 												key={item.href}
 												className={cn(
-													"inline-flex items-center gap-2 rounded-full border border-transparent px-4 py-2 text-sm text-foreground/72 transition hover:border-white/10 hover:bg-white/5 hover:text-foreground",
+													"inline-flex items-center gap-2 rounded-full border border-transparent px-5 py-2 text-sm text-foreground/72 transition hover:border-white/10 hover:bg-white/5 hover:text-foreground",
 													active && "border-white/10 bg-white/10 text-white",
 												)}
-															href={item.href as Route}
+												href={item.href as Route}
 											>
 												<Icon className="h-4 w-4" />
 												<span>{item.label}</span>
 											</Link>
 										);
 									})}
-								</nav>
-							</div>
+						</nav>
 
-							<div className="flex items-center justify-between gap-4 rounded-[28px] border border-white/10 bg-slate-950/30 px-4 py-3 sm:px-5">
-								<div className="flex min-w-0 items-center gap-3">
-									{userImage ? (
-										<Image
-											alt={userName}
-											className="h-11 w-11 rounded-full border border-white/10 object-cover"
-											referrerPolicy="no-referrer"
-											src={userImage}
-											unoptimized
-											width={44}
-											height={44}
-										/>
-									) : (
-										<div className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/5 text-sm font-semibold text-foreground/88">
-											{userInitials || "IG"}
-										</div>
-									)}
-									<div className="min-w-0">
-										<div className="flex items-center gap-2">
-											<p className="truncate text-sm font-semibold text-foreground">
-												{userName}
-											</p>
-											{isAdminUser ? (
-												<span className="inline-flex shrink-0 items-center rounded-full border border-emerald-300/35 bg-emerald-500/15 px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.08em] text-emerald-200">
-													Admin
-												</span>
-											) : null}
-										</div>
-										{userEmail ? (
-											<p className="truncate text-xs text-foreground/62">
-												{userEmail}
-											</p>
+						<details className="relative ml-auto xl:ml-0">
+							<summary className="flex cursor-pointer list-none items-center rounded-full border border-white/10 bg-slate-950/35 p-1 transition hover:border-white/25 [&::-webkit-details-marker]:hidden">
+								{userImage ? (
+									<Image
+										alt={userName}
+										className="h-11 w-11 rounded-full border border-white/10 object-cover"
+										height={44}
+										referrerPolicy="no-referrer"
+										src={userImage}
+										unoptimized
+										width={44}
+									/>
+								) : (
+									<div className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/5 text-sm font-semibold text-foreground/88">
+										{userInitials || "IG"}
+									</div>
+								)}
+							</summary>
+
+							<div className="absolute right-0 top-[calc(100%+0.7rem)] z-50 w-72 rounded-2xl border border-white/10 bg-slate-950/95 p-4 shadow-soft backdrop-blur">
+								<div className="min-w-0">
+									<div className="flex items-center gap-2">
+										<p className="truncate text-sm font-semibold text-foreground">{userName}</p>
+										{isAdminUser ? (
+											<span className="inline-flex shrink-0 items-center rounded-full border border-emerald-300/35 bg-emerald-500/15 px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.08em] text-emerald-200">
+												Admin
+											</span>
 										) : null}
 									</div>
+									{userEmail ? <p className="truncate text-xs text-foreground/62">{userEmail}</p> : null}
 								</div>
-								<Button
-									aria-label="Logout"
-									className="shrink-0"
-									onClick={() =>
-										authClient.signOut({
-											fetchOptions: {
-												onSuccess: () => {
-													window.location.href = "/";
+								<div className="mt-4 border-t border-white/10 pt-3">
+									<Button
+										aria-label="Logout"
+										className="w-full justify-start rounded-xl px-3 py-2"
+										onClick={() =>
+											authClient.signOut({
+												fetchOptions: {
+													onSuccess: () => {
+														window.location.href = "/";
+													},
 												},
-											},
-										})
-									}
-									variant="ghost"
-								>
-									<LogOut className="h-4 w-4" />
-								</Button>
+											})
+										}
+										variant="ghost"
+									>
+										<LogOut className="h-4 w-4" />
+										<span>Logout</span>
+									</Button>
+								</div>
 							</div>
+						</details>
 					</div>
 				</Card>
 
