@@ -123,28 +123,28 @@ export function DashboardShell({ children }: { children: ReactNode }) {
 				<CompanyOnboardingModal onComplete={contextValue.refresh} />
 			) : null}
 			<div className="min-h-screen bg-background">
-				<Card className="animate-fade-in-up sticky top-0 z-40 mb-6 rounded-none border-x-0 border-t-0 border-white/10 bg-[linear-gradient(135deg,rgba(19,29,43,0.95),rgba(18,47,39,0.92))] hover:border-white/10">
-					<div className="mx-auto grid max-w-7xl gap-4 px-4 py-4 sm:px-6 xl:grid-cols-[minmax(0,1fr)_auto_auto] xl:items-center">
-						<div className="min-w-0">
-							<p className="font-display text-2xl font-semibold text-white">
-								Invoice Manager
-							</p>
-							<div className="mt-2 flex min-w-0 items-center gap-3">
-								{companyProfile?.logoPath ? (
-									<Image
-										alt="Company logo"
-										className="h-10 w-10 rounded-xl border border-white/10 bg-white object-contain p-1"
-										height={40}
-										src="/api/company-profile/logo"
-										unoptimized
-										width={40}
-									/>
-								) : (
-									<div className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-xs font-semibold text-foreground/78">
-										{companyInitials || "IM"}
-									</div>
-								)}
-								<p className="truncate text-sm text-foreground/70">{companyDisplayName}</p>
+				<Card className="animate-fade-in-up sticky top-0 z-40 mb-4 rounded-none border-x-0 border-t-0 border-white/10 bg-[linear-gradient(135deg,rgba(19,29,43,0.95),rgba(18,47,39,0.92))] hover:border-white/10">
+					<div className="grid w-full gap-3 px-4 py-2.5 sm:px-6 xl:grid-cols-[minmax(280px,1fr)_auto_minmax(280px,1fr)] xl:items-center">
+						<div className="flex min-w-0 items-center gap-3">
+							{companyProfile?.logoPath ? (
+								<Image
+									alt="Company logo"
+									className="h-12 w-12 rounded-xl border border-white/10 bg-white object-contain p-1"
+									height={48}
+									src="/api/company-profile/logo"
+									unoptimized
+									width={48}
+								/>
+							) : (
+								<div className="flex h-12 w-12 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-xs font-semibold text-foreground/78">
+									{companyInitials || "IM"}
+								</div>
+							)}
+							<div className="min-w-0">
+								<p className="truncate font-display text-xl font-semibold leading-tight text-white">
+									Invoice Manager
+								</p>
+								<p className="truncate text-sm leading-tight text-foreground/70">{companyDisplayName}</p>
 							</div>
 						</div>
 
@@ -157,7 +157,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
 											<Link
 												key={item.href}
 												className={cn(
-													"inline-flex items-center gap-2 rounded-full border border-transparent px-5 py-2 text-sm text-foreground/72 transition hover:border-white/10 hover:bg-white/5 hover:text-foreground",
+													"inline-flex items-center gap-2 rounded-full border border-transparent px-4 py-1.5 text-sm text-foreground/72 transition hover:border-white/10 hover:bg-white/5 hover:text-foreground",
 													active && "border-white/10 bg-white/10 text-white",
 												)}
 												href={item.href as Route}
@@ -169,20 +169,20 @@ export function DashboardShell({ children }: { children: ReactNode }) {
 									})}
 						</nav>
 
-						<details className="relative ml-auto xl:ml-0">
+						<details className="relative ml-auto xl:ml-0 xl:justify-self-end">
 							<summary className="flex cursor-pointer list-none items-center rounded-full border border-white/10 bg-slate-950/35 p-1 transition hover:border-white/25 [&::-webkit-details-marker]:hidden">
 								{userImage ? (
 									<Image
 										alt={userName}
-										className="h-11 w-11 rounded-full border border-white/10 object-cover"
-										height={44}
+										className="h-10 w-10 rounded-full border border-white/10 object-cover"
+										height={40}
 										referrerPolicy="no-referrer"
 										src={userImage}
 										unoptimized
-										width={44}
+										width={40}
 									/>
 								) : (
-									<div className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/5 text-sm font-semibold text-foreground/88">
+									<div className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-sm font-semibold text-foreground/88">
 										{userInitials || "IG"}
 									</div>
 								)}
