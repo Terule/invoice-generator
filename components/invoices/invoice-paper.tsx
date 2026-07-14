@@ -53,7 +53,7 @@ function formatDate(value: string) {
 }
 
 function Address({ children }: { children?: string | null }) {
-  return children ? <p className="mt-2 break-words text-[10px] leading-4 text-slate-600">{children}</p> : null;
+  return children ? <p className="mt-2 wrap-break-word text-[10px] leading-4 text-slate-600">{children}</p> : null;
 }
 
 export function InvoicePaper({
@@ -72,7 +72,7 @@ export function InvoicePaper({
   const isTwoLineCompanyName = companyName.length > 24;
 
   return (
-    <article className="invoice-paper flex min-h-[842px] w-[595px] shrink-0 flex-col overflow-hidden border-t-[7px] bg-[#fffefd] text-slate-900 shadow-[0_24px_70px_rgba(0,0,0,0.28)]" style={{ borderTopColor: invoiceColor }}>
+    <article className="invoice-paper flex min-h-210.5 w-148.75 shrink-0 flex-col overflow-hidden border-t-[7px] bg-[#fffefd] text-slate-900 shadow-[0_24px_70px_rgba(0,0,0,0.28)]" style={{ borderTopColor: invoiceColor }}>
       <header className="flex items-start justify-between gap-6 px-8 pb-5 pt-6">
         <div className="min-w-0 max-w-[60%]">
           <div className="flex items-stretch gap-2 pt-4">
@@ -103,13 +103,13 @@ export function InvoicePaper({
       <section className="grid gap-3 px-8 pb-5 sm:grid-cols-2">
         <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-[0_3px_10px_rgba(15,23,42,0.07)]">
           <p className="text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: invoiceColor }}>Bill from - seller</p>
-          <p className="mt-2 break-words text-sm font-semibold text-slate-950">{sender?.legalName || "Your company"}</p>
+          <p className="mt-2 wrap-break-word text-sm font-semibold text-slate-950">{sender?.legalName || "Your company"}</p>
           <Address>{sender?.address}</Address>
           {sender?.taxId ? <p className="mt-1 text-[10px] text-slate-600">Tax ID (CNPJ): {sender.taxId}</p> : null}
         </div>
         <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-[0_3px_10px_rgba(15,23,42,0.07)]">
           <p className="text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: invoiceColor }}>Bill to - buyer</p>
-          <p className="mt-2 break-words text-sm font-semibold text-slate-950">{recipient.name || "Contractor name"}</p>
+          <p className="mt-2 wrap-break-word text-sm font-semibold text-slate-950">{recipient.name || "Contractor name"}</p>
           <Address>{recipient.address}</Address>
           {recipient.email ? <p className="mt-1 break-all text-[10px] text-slate-600">{recipient.email}</p> : null}
           {recipient.companyIdentifier ? <p className="mt-1 text-[10px] text-slate-600">Company ID: {recipient.companyIdentifier}</p> : null}
@@ -133,7 +133,7 @@ export function InvoicePaper({
                 className="grid grid-cols-[minmax(0,1fr)_38px_92px_106px] gap-2 border-b border-slate-200 px-3 py-3 text-[10px] last:border-b-0"
                 key={item.id}
               >
-                <p className="break-words font-medium leading-4 text-slate-800">{item.description || `Service item ${index + 1}`}</p>
+                <p className="wrap-break-word font-medium leading-4 text-slate-800">{item.description || `Service item ${index + 1}`}</p>
                 <p className="text-right text-slate-600">{item.quantity || 1}</p>
                 <p className="text-right text-slate-600">{formatCurrency(item.unitPriceCents, currency)}</p>
                 <p className="text-right font-semibold text-slate-900">{formatCurrency(itemTotal, currency)}</p>
@@ -142,7 +142,7 @@ export function InvoicePaper({
           })}
         </div>
 
-        <div className="ml-auto mt-3 w-[225px] overflow-hidden rounded-lg border border-[#b9d4de]">
+        <div className="ml-auto mt-3 w-56.25 overflow-hidden rounded-lg border border-[#b9d4de]">
           <div className="flex items-center justify-between bg-[#f1f8fa] px-3 py-2 text-[10px] text-slate-600">
             <span>Subtotal</span>
             <span>{formatCurrency(totalCents, currency)}</span>
@@ -172,7 +172,7 @@ export function InvoicePaper({
       {notes ? (
         <section className="mx-8 mt-4 border-l-2 bg-[#f4fafb] px-3 py-2" style={{ borderLeftColor: invoiceColor }}>
           <p className="text-[9px] font-bold uppercase tracking-[0.12em]" style={{ color: invoiceColor }}>Notes</p>
-          <p className="mt-1 whitespace-pre-wrap break-words text-[10px] leading-4 text-slate-600">{notes}</p>
+          <p className="mt-1 whitespace-pre-wrap wrap-break-word text-[10px] leading-4 text-slate-600">{notes}</p>
         </section>
       ) : null}
 
