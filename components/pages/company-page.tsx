@@ -292,32 +292,16 @@ export function CompanyPageContent() {
                 <p className="mt-2 text-xl font-semibold">{company.tradingName}</p>
               </div>
               <div>
-                <p className="text-xs uppercase tracking-[0.24em] text-foreground/55">Street</p>
-                <p className="mt-2 text-xl font-semibold">{company.street}</p>
+                <p className="text-xs uppercase tracking-[0.24em] text-foreground/55">Street / Number</p>
+                <p className="mt-2 text-xl font-semibold">{company.street}, {company.number}</p>
               </div>
               <div>
-                <p className="text-xs uppercase tracking-[0.24em] text-foreground/55">Number</p>
-                <p className="mt-2 text-xl font-semibold">{company.number}</p>
+                <p className="text-xs uppercase tracking-[0.24em] text-foreground/55">Neighborhood / City / State</p>
+                <p className="mt-2 text-xl font-semibold">{company.neighborhood}, {company.city} - {company.state}</p>
               </div>
               <div>
-                <p className="text-xs uppercase tracking-[0.24em] text-foreground/55">Neighborhood</p>
-                <p className="mt-2 text-xl font-semibold">{company.neighborhood}</p>
-              </div>
-              <div>
-                <p className="text-xs uppercase tracking-[0.24em] text-foreground/55">City</p>
-                <p className="mt-2 text-xl font-semibold">{company.city}</p>
-              </div>
-              <div>
-                <p className="text-xs uppercase tracking-[0.24em] text-foreground/55">State</p>
-                <p className="mt-2 text-xl font-semibold">{company.state}</p>
-              </div>
-              <div>
-                <p className="text-xs uppercase tracking-[0.24em] text-foreground/55">CEP</p>
-                <p className="mt-2 text-xl font-semibold">{formatCep(company.cep)}</p>
-              </div>
-              <div>
-                <p className="text-xs uppercase tracking-[0.24em] text-foreground/55">Country</p>
-                <p className="mt-2 text-xl font-semibold">{company.country}</p>
+                <p className="text-xs uppercase tracking-[0.24em] text-foreground/55">CEP / Country</p>
+                <p className="mt-2 text-xl font-semibold">{formatCep(company.cep)} · {company.country}</p>
               </div>
             </div>
           )
