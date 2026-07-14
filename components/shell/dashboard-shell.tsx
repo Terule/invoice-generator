@@ -135,7 +135,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
 									alt="Company logo"
 									className="h-12 w-12 rounded-xl border border-white/10 bg-white object-contain p-1"
 									height={48}
-									src={`/api/company-profile/logo?path=${encodeURIComponent(companyProfile.logoPath)}&v=${logoRefreshNonce}`}
+									src={`/api/company-profile/logo?v=${encodeURIComponent(companyProfile.logoPath)}-${logoRefreshNonce}`}
 									unoptimized
 									width={48}
 								/>

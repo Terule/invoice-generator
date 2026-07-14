@@ -368,7 +368,7 @@ export function CompanyPageContent() {
               <div className="relative h-16 w-16 shrink-0">
                 <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-secondary/60">
                   {brandingForm.logoPath ? (
-                    <Image alt="Company logo preview" className="h-full w-full object-contain" height={64} src={`/api/company-profile/logo?path=${encodeURIComponent(brandingForm.logoPath)}`} unoptimized width={64} />
+                    <Image alt="Company logo preview" className="h-full w-full object-contain" height={64} src={`/api/company-profile/logo?v=${encodeURIComponent(brandingForm.logoPath)}`} unoptimized width={64} />
                   ) : (
                     <ImageUp className="h-6 w-6 text-foreground/40" />
                   )}

@@ -324,7 +324,7 @@ export function HomePageContent() {
                     tradingName: bootstrap.companyProfile.tradingName,
                     taxId: formatCnpj(bootstrap.companyProfile.taxId),
                     address: companyAddress,
-                    logoUrl: bootstrap.companyProfile.logoPath ? `/api/company-profile/logo?path=${encodeURIComponent(bootstrap.companyProfile.logoPath)}` : null,
+                    logoUrl: bootstrap.companyProfile.logoPath ? `/api/company-profile/logo?v=${encodeURIComponent(bootstrap.companyProfile.logoPath)}` : null,
                     invoiceColor: bootstrap.companyProfile.invoiceColor,
                     paymentBeneficiary: bootstrap.companyProfile.paymentBeneficiary,
                     paymentBankName: bootstrap.companyProfile.paymentBankName,
