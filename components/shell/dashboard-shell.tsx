@@ -7,8 +7,10 @@ import {
 	Home,
 	Loader2,
 	LogOut,
+	Shield,
 	Users,
 } from "lucide-react";
+import type { Route } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -18,6 +20,7 @@ import { LoginScreen } from "@/components/auth/login-screen";
 import { CompanyOnboardingModal } from "@/components/onboarding/company-onboarding-modal";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { isAdminEmail } from "@/lib/admin";
 import { authClient } from "@/lib/auth-client";
 import { type BootstrapPayload, fetchBootstrap } from "@/lib/dashboard";
 import { cn } from "@/lib/utils";
@@ -39,12 +42,14 @@ export function useDashboardData() {
 	return context;
 }
 
-const navItems = [
+const baseNavItems = [
 	{ href: "/", label: "Home", icon: Home },
 	{ href: "/company", label: "My Company", icon: Building2 },
 	{ href: "/contractors", label: "Contractors", icon: Users },
 	{ href: "/invoices", label: "Invoices", icon: FileText },
 ] as const;
+
+const adminNavItem = { href: "/admin", label: "Admin", icon: Shield } as const;
 
 export function DashboardShell({ children }: { children: ReactNode }) {
 	const pathname = usePathname();
@@ -91,6 +96,10 @@ export function DashboardShell({ children }: { children: ReactNode }) {
 	const userName = session.user.name ?? "Workspace user";
 	const userEmail = session.user.email ?? "";
 	const userImage = session.user.image;
+	const isAdminUser = isAdminEmail(userEmail);
+	const navItems = isAdminEmail(userEmail)
+		? [...baseNavItems, adminNavItem]
+		: baseNavItems;
 	const userInitials = userName
 		.split(" ")
 		.filter(Boolean)
@@ -143,7 +152,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
 													"inline-flex items-center gap-2 rounded-full border border-transparent px-4 py-2 text-sm text-foreground/72 transition hover:border-white/10 hover:bg-white/5 hover:text-foreground",
 													active && "border-white/10 bg-white/10 text-white",
 												)}
-												href={item.href}
+															href={item.href as Route}
 											>
 												<Icon className="h-4 w-4" />
 												<span>{item.label}</span>
@@ -171,9 +180,16 @@ export function DashboardShell({ children }: { children: ReactNode }) {
 										</div>
 									)}
 									<div className="min-w-0">
-										<p className="truncate text-sm font-semibold text-foreground">
-											{userName}
-										</p>
+										<div className="flex items-center gap-2">
+											<p className="truncate text-sm font-semibold text-foreground">
+												{userName}
+											</p>
+											{isAdminUser ? (
+												<span className="inline-flex shrink-0 items-center rounded-full border border-emerald-300/35 bg-emerald-500/15 px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.08em] text-emerald-200">
+													Admin
+												</span>
+											) : null}
+										</div>
 										{userEmail ? (
 											<p className="truncate text-xs text-foreground/62">
 												{userEmail}

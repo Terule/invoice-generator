@@ -2,7 +2,7 @@
 
 import { useMutation } from "@tanstack/react-query";
 import { Building2, CircleHelp, Landmark, LoaderCircle, ScanSearch } from "lucide-react";
-import { type FormEvent, useState } from "react";
+import { type ComponentProps, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -20,6 +20,10 @@ import {
   normalizeDigits
 } from "@/lib/dashboard";
 import type { CompanyProfileInput } from "@/lib/validations";
+
+type FormSubmitEvent = Parameters<
+  NonNullable<ComponentProps<"form">["onSubmit"]>
+>[0];
 
 export function CompanyOnboardingModal({
   onComplete
@@ -101,7 +105,7 @@ export function CompanyOnboardingModal({
     }
   }
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormSubmitEvent) {
     event.preventDefault();
     setPaymentError("");
 

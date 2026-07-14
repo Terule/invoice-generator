@@ -11,7 +11,7 @@ import {
   Trash2,
   UserCircle2
 } from "lucide-react";
-import { type FormEvent, useState } from "react";
+import { type ComponentProps, useState } from "react";
 
 import { InvoicePaper } from "@/components/invoices/invoice-paper";
 import { SectionHeader } from "@/components/shared/section-header";
@@ -30,6 +30,10 @@ import {
   getNextInvoiceNumber,
   normalizeCentsInput
 } from "@/lib/dashboard";
+
+type FormSubmitEvent = Parameters<
+  NonNullable<ComponentProps<"form">["onSubmit"]>
+>[0];
 
 export function HomePageContent() {
   const {
@@ -81,7 +85,7 @@ export function HomePageContent() {
         .join(", ")
     : null;
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormSubmitEvent) {
     event.preventDefault();
     setSubmitError("");
 
@@ -292,8 +296,8 @@ export function HomePageContent() {
         </form>
       </Card>
 
-      <Card className="animate-fade-in-up stagger-1 h-[calc(100svh-12rem)] min-h-[460px] overflow-hidden p-3 sm:p-4 xl:sticky xl:top-4">
-        <div className="flex h-full overflow-auto rounded-[24px] border border-white/10 bg-slate-950/35 p-2 sm:justify-center sm:p-4">
+      <Card className="animate-fade-in-up stagger-1 h-[calc(100svh-12rem)] min-h-115 overflow-hidden p-3 sm:p-4 xl:sticky xl:top-4">
+        <div className="flex h-full overflow-auto rounded-3xl border border-white/10 bg-slate-950/35 p-2 sm:justify-center sm:p-4">
           <InvoicePaper
             currency={selectedCurrency.value}
             dueDate={form.dueDate}

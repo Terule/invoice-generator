@@ -3,7 +3,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { Building2, ImageUp, Landmark, MapPinned, Palette, Pencil, X } from "lucide-react";
 import Image from "next/image";
-import { type ChangeEvent, type FormEvent, useState } from "react";
+import { type ChangeEvent, type ComponentProps, useState } from "react";
 
 import { SectionHeader } from "@/components/shared/section-header";
 import { useDashboardData } from "@/components/shell/dashboard-shell";
@@ -20,6 +20,10 @@ import {
 } from "@/lib/branding";
 import { formatCnpj, removeCompanyLogo, updateCompanyBranding, updatePaymentDetails, uploadCompanyLogo } from "@/lib/dashboard";
 import type { PaymentDetailsInput } from "@/lib/validations";
+
+type FormSubmitEvent = Parameters<
+  NonNullable<ComponentProps<"form">["onSubmit"]>
+>[0];
 
 function paymentFormFromCompany(company: ReturnType<typeof useDashboardData>["bootstrap"]["companyProfile"]) {
   return {
@@ -95,7 +99,7 @@ export function CompanyPageContent() {
     setPaymentForm((current) => ({ ...current, [field]: value }));
   }
 
-  async function handlePaymentSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handlePaymentSubmit(event: FormSubmitEvent) {
     event.preventDefault();
     setPaymentError("");
 
@@ -169,7 +173,7 @@ export function CompanyPageContent() {
     }
   }
 
-  async function handleBrandingSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleBrandingSubmit(event: FormSubmitEvent) {
     event.preventDefault();
     setBrandingError("");
 
@@ -371,7 +375,7 @@ function PaymentDetailsSummary({ company }: { company: NonNullable<ReturnType<ty
         {details.map(([label, value]) => (
           <div key={label}>
             <dt className="text-xs uppercase tracking-[0.18em] text-foreground/55">{label}</dt>
-            <dd className="mt-1 break-words text-sm font-medium text-foreground">{value}</dd>
+            <dd className="mt-1 wrap-break-words text-sm font-medium text-foreground">{value}</dd>
           </div>
         ))}
       </dl>

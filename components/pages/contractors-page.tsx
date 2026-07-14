@@ -2,25 +2,28 @@
 
 import { useMutation } from "@tanstack/react-query";
 import { Loader2, Mail, Search, UserRoundSearch, Users } from "lucide-react";
-import { FormEvent, useState } from "react";
-
-import { useDashboardData } from "@/components/shell/dashboard-shell";
+import { type ComponentProps, useState } from "react";
 import { SectionHeader } from "@/components/shared/section-header";
+import { useDashboardData } from "@/components/shell/dashboard-shell";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  currencyOptions,
+  type Contractor,
+  type ContractorDraft,
   createContractor,
+  currencyOptions,
   initialContractorForm,
   lookupCep,
   normalizeCompanyIdentifier,
-  type Contractor,
-  type ContractorDraft,
   updateContractor
 } from "@/lib/dashboard";
 import type { ContractorInput } from "@/lib/validations";
+
+type FormSubmitEvent = Parameters<
+  NonNullable<ComponentProps<"form">["onSubmit"]>
+>[0];
 
 export function ContractorsPageContent() {
   const { bootstrap, refresh } = useDashboardData();
@@ -90,7 +93,7 @@ export function ContractorsPageContent() {
     }
   }
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormSubmitEvent) {
     event.preventDefault();
     setSubmitError("");
 
