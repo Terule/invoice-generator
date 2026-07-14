@@ -207,7 +207,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
 								<div className="mt-4 border-t border-white/10 pt-3">
 									<Button
 										aria-label="Logout"
-										className="w-full justify-start rounded-xl px-3 py-2"
+										className="w-full items-center gap-2 justify-start rounded-xl px-3 py-2 text-sm"
 										onClick={() =>
 											authClient.signOut({
 												fetchOptions: {
