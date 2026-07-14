@@ -163,8 +163,11 @@ export function AdminPageContent() {
 										</p>
 									</div>
 									<Button
+										aria-label={`Reset account for ${user.email}`}
+										className="border-rose-400/40 text-rose-200 hover:border-rose-300/70 hover:bg-rose-500/20"
 										disabled={isResetting}
 										onClick={() => handleReset(user)}
+										title="Reset account"
 										type="button"
 										variant="outline"
 									>
@@ -173,7 +176,6 @@ export function AdminPageContent() {
 										) : (
 											<RotateCcw className="h-4 w-4" />
 										)}
-										Reset account
 									</Button>
 								</div>
 							</Card>

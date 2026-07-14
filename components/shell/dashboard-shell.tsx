@@ -112,10 +112,9 @@ export function DashboardShell({ children }: { children: ReactNode }) {
 			{!companyProfile ? (
 				<CompanyOnboardingModal onComplete={contextValue.refresh} />
 			) : null}
-			<div className="min-h-screen bg-background px-4 py-4 sm:px-6">
-				<div className="mx-auto max-w-7xl">
-					<Card className="animate-fade-in-up mb-6 border-white/10 bg-[linear-gradient(135deg,rgba(19,29,43,0.95),rgba(18,47,39,0.92))]">
-						<div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+			<div className="min-h-screen bg-background">
+				<Card className="animate-fade-in-up sticky top-0 z-40 mb-6 rounded-none border-x-0 border-t-0 border-white/10 bg-[linear-gradient(135deg,rgba(19,29,43,0.95),rgba(18,47,39,0.92))] hover:border-white/10">
+					<div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 xl:flex-row xl:items-center xl:justify-between">
 							<div className="flex flex-col gap-4 xl:flex-1 xl:flex-row xl:items-center xl:justify-between">
 								<div className="min-w-0">
 									<div className="flex items-center gap-3">
@@ -214,9 +213,10 @@ export function DashboardShell({ children }: { children: ReactNode }) {
 									<LogOut className="h-4 w-4" />
 								</Button>
 							</div>
-						</div>
-					</Card>
+					</div>
+				</Card>
 
+				<div className="mx-auto max-w-7xl px-4 pb-4 sm:px-6">
 					<div className="min-w-0">{children}</div>
 				</div>
 			</div>
