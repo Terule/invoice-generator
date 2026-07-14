@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
@@ -80,8 +81,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: "Company profile not found." }, { status: 404 });
   }
 
-  // One stable object per company prevents old logo uploads from accumulating.
-  const logoPath = `/company-logos/${session.user.id}/logo`;
+  const logoPath = `/company-logos/${session.user.id}/${Date.now()}-${randomUUID()}`;
   const upload = new FormData();
   upload.set("file", file, `logo.${extensionFor(file)}`);
   let uploaded: Response;
