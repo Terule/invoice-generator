@@ -77,6 +77,19 @@ export const companyProfileSchema = z.object({
   setupSource: z.enum(["MANUAL", "CNPJ_LOOKUP", "PDF_UPLOAD"]).default("MANUAL")
 }).merge(paymentDetailsFields).superRefine(validatePaymentDetails);
 
+export const companyInfoSchema = z.object({
+  legalName: z.string().min(2),
+  tradingName: z.string().optional(),
+  taxId: cnpjSchema,
+  cep: cepSchema,
+  street: z.string().min(2),
+  number: z.string().min(1),
+  neighborhood: z.string().min(2),
+  city: z.string().min(2),
+  state: z.string().min(2).max(2),
+  country: z.string().min(2).default("Brazil")
+});
+
 export const contractorSchema = z.object({
   legalName: z.string().min(2),
   tradingName: z.string().optional(),
@@ -102,5 +115,6 @@ export const contractorSchema = z.object({
 
 export type CreateInvoiceInput = z.infer<typeof createInvoiceSchema>;
 export type CompanyProfileInput = z.infer<typeof companyProfileSchema>;
+export type CompanyInfoInput = z.infer<typeof companyInfoSchema>;
 export type ContractorInput = z.infer<typeof contractorSchema>;
 export type PaymentDetailsInput = z.infer<typeof paymentDetailsSchema>;

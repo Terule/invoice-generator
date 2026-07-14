@@ -15,7 +15,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { createContext, useContext, useMemo } from "react";
+import { createContext, useContext, useMemo, useState } from "react";
 import { LoginScreen } from "@/components/auth/login-screen";
 import { CompanyOnboardingModal } from "@/components/onboarding/company-onboarding-modal";
 import { Button } from "@/components/ui/button";
@@ -54,6 +54,7 @@ const adminNavItem = { href: "/admin", label: "Admin", icon: Shield } as const;
 export function DashboardShell({ children }: { children: ReactNode }) {
 	const pathname = usePathname();
 	const queryClient = useQueryClient();
+	const [logoRefreshNonce, setLogoRefreshNonce] = useState(0);
 	const { data: session, isPending: isSessionLoading } =
 		authClient.useSession();
 	const bootstrapQuery = useQuery({
@@ -67,8 +68,11 @@ export function DashboardShell({ children }: { children: ReactNode }) {
 			bootstrapQuery.data
 				? {
 						bootstrap: bootstrapQuery.data,
-						refresh: () =>
-							queryClient.invalidateQueries({ queryKey: ["bootstrap"] }),
+						refresh: async () => {
+							const result = await queryClient.invalidateQueries({ queryKey: ["bootstrap"] });
+							setLogoRefreshNonce((current) => current + 1);
+							return result;
+						},
 					}
 				: null,
 		[bootstrapQuery.data, queryClient],
@@ -131,7 +135,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
 									alt="Company logo"
 									className="h-12 w-12 rounded-xl border border-white/10 bg-white object-contain p-1"
 									height={48}
-									src="/api/company-profile/logo"
+									src={`/api/company-profile/logo?v=${logoRefreshNonce}`}
 									unoptimized
 									width={48}
 								/>

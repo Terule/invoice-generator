@@ -1,5 +1,6 @@
 import { formatCnpj as formatCnpjValue, normalizeCnpj } from "@/lib/cnpj";
 import type {
+  CompanyInfoInput,
 	CompanyProfileInput,
 	ContractorInput,
 	CreateInvoiceInput
@@ -290,6 +291,23 @@ export async function createCompanyProfile(payload: CompanyProfileInput) {
 
   if (!response.ok) {
     throw new Error("Failed to save company profile.");
+  }
+
+  return response.json();
+}
+
+export async function updateCompanyInfo(payload: CompanyInfoInput) {
+  const response = await fetch("/api/company-profile", {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => null);
+    throw new Error(error?.message || "Failed to update company information.");
   }
 
   return response.json();

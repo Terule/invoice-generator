@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
-import { Building2, ImageUp, Landmark, MapPinned, Palette, Pencil, X } from "lucide-react";
+import { Building2, ImageUp, Landmark, Palette, Pencil, X } from "lucide-react";
 import Image from "next/image";
 import { type ChangeEvent, type ComponentProps, useState } from "react";
 
@@ -18,8 +18,8 @@ import {
   MAX_LOGO_DIMENSIONS_LABEL,
   MAX_LOGO_SIZE_LABEL
 } from "@/lib/branding";
-import { formatCnpj, removeCompanyLogo, updateCompanyBranding, updatePaymentDetails, uploadCompanyLogo } from "@/lib/dashboard";
-import type { PaymentDetailsInput } from "@/lib/validations";
+import { formatCep, formatCnpj, removeCompanyLogo, updateCompanyBranding, updateCompanyInfo, updatePaymentDetails, uploadCompanyLogo } from "@/lib/dashboard";
+import type { CompanyInfoInput, PaymentDetailsInput } from "@/lib/validations";
 
 type FormSubmitEvent = Parameters<
   NonNullable<ComponentProps<"form">["onSubmit"]>
@@ -35,6 +35,21 @@ function paymentFormFromCompany(company: ReturnType<typeof useDashboardData>["bo
     paymentSwiftBic: company?.paymentSwiftBic ?? "",
     paymentPixKey: company?.paymentPixKey ?? "",
     paymentInstructions: company?.paymentInstructions ?? ""
+  };
+}
+
+function companyInfoFormFromCompany(company: ReturnType<typeof useDashboardData>["bootstrap"]["companyProfile"]): CompanyInfoInput {
+  return {
+    taxId: company?.taxId ?? "",
+    legalName: company?.legalName ?? "",
+    tradingName: company?.tradingName ?? "",
+    cep: company?.cep ?? "",
+    street: company?.street ?? "",
+    number: company?.number ?? "",
+    neighborhood: company?.neighborhood ?? "",
+    city: company?.city ?? "",
+    state: company?.state ?? "",
+    country: company?.country ?? "Brazil"
   };
 }
 
@@ -59,11 +74,22 @@ async function isSquareLogo(file: File) {
 export function CompanyPageContent() {
   const { bootstrap, refresh } = useDashboardData();
   const company = bootstrap.companyProfile;
+  const [isEditingCompanyInfo, setIsEditingCompanyInfo] = useState(false);
+  const [companyInfoForm, setCompanyInfoForm] = useState<CompanyInfoInput>(() => companyInfoFormFromCompany(company));
+  const [companyInfoError, setCompanyInfoError] = useState("");
   const [isEditingPayment, setIsEditingPayment] = useState(false);
   const [paymentForm, setPaymentForm] = useState<PaymentDetailsInput>(() => paymentFormFromCompany(company));
   const [paymentError, setPaymentError] = useState("");
   const [brandingForm, setBrandingForm] = useState(() => brandingFormFromCompany(company));
   const [brandingError, setBrandingError] = useState("");
+  const updateCompanyInfoMutation = useMutation({
+    mutationFn: updateCompanyInfo,
+    onSuccess: async () => {
+      await refresh();
+      setIsEditingCompanyInfo(false);
+      setCompanyInfoError("");
+    }
+  });
   const updatePaymentMutation = useMutation({
     mutationFn: updatePaymentDetails,
     onSuccess: async () => {
@@ -97,6 +123,32 @@ export function CompanyPageContent() {
 
   function updatePaymentField(field: keyof PaymentDetailsInput, value: string) {
     setPaymentForm((current) => ({ ...current, [field]: value }));
+  }
+
+  function updateCompanyInfoField(field: keyof CompanyInfoInput, value: string) {
+    setCompanyInfoForm((current) => ({ ...current, [field]: value }));
+  }
+
+  async function handleCompanyInfoSubmit(event: FormSubmitEvent) {
+    event.preventDefault();
+    setCompanyInfoError("");
+
+    if (!event.currentTarget.checkValidity()) {
+      event.currentTarget.reportValidity();
+      return;
+    }
+
+    try {
+      await updateCompanyInfoMutation.mutateAsync(companyInfoForm);
+    } catch (error) {
+      setCompanyInfoError(error instanceof Error ? error.message : "Unable to save company information.");
+    }
+  }
+
+  function cancelCompanyInfoEdit() {
+    setCompanyInfoForm(companyInfoFormFromCompany(company));
+    setIsEditingCompanyInfo(false);
+    setCompanyInfoError("");
   }
 
   async function handlePaymentSubmit(event: FormSubmitEvent) {
@@ -185,33 +237,125 @@ export function CompanyPageContent() {
   }
 
   return (
-    <section className="grid gap-6 xl:grid-cols-2">
+    <section className="grid gap-6 xl:grid-cols-3">
       <Card className="animate-fade-in-up">
-        <SectionHeader
-          description="Used for future invoices after the first setup."
-          icon={Building2}
-          title="My Company"
-        />
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <SectionHeader
+            description="Used for future invoices. Issued invoices remain immutable snapshots."
+            icon={Building2}
+            title="My Company"
+          />
+          {!isEditingCompanyInfo ? (
+            <Button className="gap-2" onClick={() => setIsEditingCompanyInfo(true)} variant="outline">
+              <Pencil className="h-4 w-4" />
+              Edit company info
+            </Button>
+          ) : null}
+        </div>
 
         {company ? (
-          <div className="mt-6 space-y-5">
-            <div>
-              <p className="text-xs uppercase tracking-[0.24em] text-foreground/55">Razão social</p>
-              <p className="mt-2 text-xl font-semibold">{company.legalName}</p>
+          isEditingCompanyInfo ? (
+            <form className="mt-6 space-y-4" onSubmit={handleCompanyInfoSubmit}>
+              <div className="grid gap-4 md:grid-cols-2">
+                <CompanyInfoInputField required label="Tax ID / CNPJ" value={formatCnpj(companyInfoForm.taxId)} onChange={(value) => updateCompanyInfoField("taxId", value)} />
+                <CompanyInfoInputField required label="Legal name" value={companyInfoForm.legalName} onChange={(value) => updateCompanyInfoField("legalName", value)} />
+                <CompanyInfoInputField label="Trading name" value={companyInfoForm.tradingName} onChange={(value) => updateCompanyInfoField("tradingName", value)} />
+                <CompanyInfoInputField required label="CEP" value={formatCep(companyInfoForm.cep)} onChange={(value) => updateCompanyInfoField("cep", value)} />
+                <CompanyInfoInputField required label="Street" value={companyInfoForm.street} onChange={(value) => updateCompanyInfoField("street", value)} />
+                <CompanyInfoInputField required label="Number" value={companyInfoForm.number} onChange={(value) => updateCompanyInfoField("number", value)} />
+                <CompanyInfoInputField required label="Neighborhood" value={companyInfoForm.neighborhood} onChange={(value) => updateCompanyInfoField("neighborhood", value)} />
+                <CompanyInfoInputField required label="City" value={companyInfoForm.city} onChange={(value) => updateCompanyInfoField("city", value)} />
+                <CompanyInfoInputField required label="State" maxLength={2} value={companyInfoForm.state.toUpperCase()} onChange={(value) => updateCompanyInfoField("state", value.toUpperCase())} />
+                <CompanyInfoInputField required label="Country" value={companyInfoForm.country} onChange={(value) => updateCompanyInfoField("country", value)} />
+              </div>
+
+              <div className="flex flex-wrap gap-3">
+                <Button disabled={updateCompanyInfoMutation.isPending} type="submit">
+                  {updateCompanyInfoMutation.isPending ? "Saving..." : "Save company info"}
+                </Button>
+                <Button onClick={cancelCompanyInfoEdit} type="button" variant="ghost">Cancel</Button>
+              </div>
+              {companyInfoError ? <p className="text-sm text-rose-300" role="alert">{companyInfoError}</p> : null}
+            </form>
+          ) : (
+            <div className="mt-6 space-y-5">
+              <div>
+                <p className="text-xs uppercase tracking-[0.24em] text-foreground/55">Tax ID / CNPJ</p>
+                <p className="mt-2 text-xl font-semibold">{formatCnpj(company.taxId)}</p>
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-[0.24em] text-foreground/55">Legal name</p>
+                <p className="mt-2 text-xl font-semibold">{company.legalName}</p>
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-[0.24em] text-foreground/55">Trading name</p>
+                <p className="mt-2 text-xl font-semibold">{company.tradingName}</p>
+              </div>
+              <div className="rounded-3xl border border-white/10 bg-secondary/60 p-5">
+                <p className="text-xs uppercase tracking-[0.2em] text-foreground/55">Address</p>
+                <p className="mt-2 text-base font-semibold text-foreground">
+                  {company.street}, {company.number}
+                </p>
+                <p className="mt-1 text-sm text-foreground/72">
+                  {company.neighborhood}, {company.city} - {company.state}
+                </p>
+                <p className="text-sm text-foreground/72">
+                  {company.cep} · {company.country}
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="text-xs uppercase tracking-[0.24em] text-foreground/55">Nome fantasia</p>
-              <p className="mt-2 text-xl font-semibold">{company.tradingName}</p>
-            </div>
-            <div>
-              <p className="text-xs uppercase tracking-[0.24em] text-foreground/55">Tax ID / CNPJ</p>
-              <p className="mt-2 text-xl font-semibold">{formatCnpj(company.taxId)}</p>
-            </div>
-          </div>
+          )
         ) : null}
       </Card>
 
       <Card className="animate-fade-in-up stagger-1">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <SectionHeader
+            description="Shown on future invoices. Issued invoices keep their original payment details."
+            icon={Landmark}
+            title="Payment Details"
+          />
+          {!isEditingPayment ? (
+            <Button className="gap-2" onClick={() => setIsEditingPayment(true)} variant="outline">
+              <Pencil className="h-4 w-4" />
+              Edit payment details
+            </Button>
+          ) : null}
+        </div>
+
+        {isEditingPayment ? (
+          <form className="mt-6 space-y-4" onSubmit={handlePaymentSubmit}>
+            <div className="grid gap-4 md:grid-cols-2">
+              <PaymentInput required label="Beneficiary name" value={paymentForm.paymentBeneficiary} onChange={(value) => updatePaymentField("paymentBeneficiary", value)} />
+              <PaymentInput label="Bank name" value={paymentForm.paymentBankName} onChange={(value) => updatePaymentField("paymentBankName", value)} />
+              <PaymentInput label="Account number" value={paymentForm.paymentAccountNumber} onChange={(value) => updatePaymentField("paymentAccountNumber", value)} />
+              <PaymentInput label="Sort code" value={paymentForm.paymentSortCode} onChange={(value) => updatePaymentField("paymentSortCode", value)} />
+              <PaymentInput label="IBAN" value={paymentForm.paymentIban} onChange={(value) => updatePaymentField("paymentIban", value)} />
+              <PaymentInput label="SWIFT / BIC" value={paymentForm.paymentSwiftBic} onChange={(value) => updatePaymentField("paymentSwiftBic", value)} />
+              <PaymentInput label="PIX key" value={paymentForm.paymentPixKey} onChange={(value) => updatePaymentField("paymentPixKey", value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>Additional payment instructions</Label>
+              <textarea
+                className="min-h-24 w-full rounded-2xl border border-border bg-secondary px-4 py-3 text-sm text-foreground outline-none transition focus:border-accent"
+                value={paymentForm.paymentInstructions}
+                onChange={(event) => updatePaymentField("paymentInstructions", event.target.value)}
+              />
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <Button disabled={updatePaymentMutation.isPending} type="submit">
+                {updatePaymentMutation.isPending ? "Saving..." : "Save payment details"}
+              </Button>
+              <Button onClick={cancelPaymentEdit} type="button" variant="ghost">Cancel</Button>
+            </div>
+            {paymentError ? <p className="text-sm text-rose-300" role="alert">{paymentError}</p> : null}
+          </form>
+        ) : company ? (
+          <PaymentDetailsSummary company={company} />
+        ) : null}
+      </Card>
+
+      <Card className="animate-fade-in-up stagger-2">
         <SectionHeader
           description="Used on future invoice previews and PDFs."
           icon={Palette}
@@ -272,76 +416,28 @@ export function CompanyPageContent() {
           </form>
         ) : null}
       </Card>
-
-      <Card className="animate-fade-in-up stagger-2 xl:order-4">
-        <SectionHeader
-          description="Your fixed business address for future invoices."
-          icon={MapPinned}
-          title="Address"
-        />
-
-        {company ? (
-          <div className="mt-6 rounded-[28px] border border-white/10 bg-secondary/60 p-6">
-            <p className="text-xl font-semibold">
-              {company.street}, {company.number}
-            </p>
-            <p className="mt-2 text-base text-foreground/72">
-              {company.neighborhood}, {company.city} - {company.state}
-            </p>
-            <p className="text-base text-foreground/72">
-              {company.cep} · {company.country}
-            </p>
-          </div>
-        ) : null}
-      </Card>
-
-      <Card className="animate-fade-in-up stagger-3 xl:order-3">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <SectionHeader
-            description="Shown on future invoices. Issued invoices keep their original payment details."
-            icon={Landmark}
-            title="Payment Details"
-          />
-          {!isEditingPayment ? (
-            <Button className="gap-2" onClick={() => setIsEditingPayment(true)} variant="outline">
-              <Pencil className="h-4 w-4" />
-              Edit payment details
-            </Button>
-          ) : null}
-        </div>
-
-        {isEditingPayment ? (
-          <form className="mt-6 space-y-4" onSubmit={handlePaymentSubmit}>
-            <div className="grid gap-4 md:grid-cols-2">
-              <PaymentInput required label="Beneficiary name" value={paymentForm.paymentBeneficiary} onChange={(value) => updatePaymentField("paymentBeneficiary", value)} />
-              <PaymentInput label="Bank name" value={paymentForm.paymentBankName} onChange={(value) => updatePaymentField("paymentBankName", value)} />
-              <PaymentInput label="Account number" value={paymentForm.paymentAccountNumber} onChange={(value) => updatePaymentField("paymentAccountNumber", value)} />
-              <PaymentInput label="Sort code" value={paymentForm.paymentSortCode} onChange={(value) => updatePaymentField("paymentSortCode", value)} />
-              <PaymentInput label="IBAN" value={paymentForm.paymentIban} onChange={(value) => updatePaymentField("paymentIban", value)} />
-              <PaymentInput label="SWIFT / BIC" value={paymentForm.paymentSwiftBic} onChange={(value) => updatePaymentField("paymentSwiftBic", value)} />
-              <PaymentInput label="PIX key" value={paymentForm.paymentPixKey} onChange={(value) => updatePaymentField("paymentPixKey", value)} />
-            </div>
-            <div className="space-y-2">
-              <Label>Additional payment instructions</Label>
-              <textarea
-                className="min-h-24 w-full rounded-2xl border border-border bg-secondary px-4 py-3 text-sm text-foreground outline-none transition focus:border-accent"
-                value={paymentForm.paymentInstructions}
-                onChange={(event) => updatePaymentField("paymentInstructions", event.target.value)}
-              />
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <Button disabled={updatePaymentMutation.isPending} type="submit">
-                {updatePaymentMutation.isPending ? "Saving..." : "Save payment details"}
-              </Button>
-              <Button onClick={cancelPaymentEdit} type="button" variant="ghost">Cancel</Button>
-            </div>
-            {paymentError ? <p className="text-sm text-rose-300" role="alert">{paymentError}</p> : null}
-          </form>
-        ) : company ? (
-          <PaymentDetailsSummary company={company} />
-        ) : null}
-      </Card>
     </section>
+  );
+}
+
+function CompanyInfoInputField({
+  label,
+  value,
+  onChange,
+  required = false,
+  maxLength
+}: {
+  label: string;
+  value?: string;
+  onChange: (value: string) => void;
+  required?: boolean;
+  maxLength?: number;
+}) {
+  return (
+    <div className="space-y-2">
+      <Label>{label}</Label>
+      <Input maxLength={maxLength} required={required} value={value ?? ""} onChange={(event) => onChange(event.target.value)} />
+    </div>
   );
 }
 
