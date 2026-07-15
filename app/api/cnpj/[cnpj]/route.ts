@@ -48,7 +48,7 @@ const LOOKUP_MAX_REQUESTS = 30;
 	let response: Response;
 
 	try {
-		response = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpj}`, {
+		response = await fetch(`https://api.opencnpj.org/${cnpj}?dataset=receita`, {
 			cache: "no-store",
 			signal: AbortSignal.timeout(5000),
 		});
@@ -78,6 +78,6 @@ const LOOKUP_MAX_REQUESTS = 30;
 		neighborhood: payload.bairro,
 		city: payload.municipio,
 		state: payload.uf,
-		country: "Brazil",
+		country: payload.pais || "Brazil",
 	});
 }
