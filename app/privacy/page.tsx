@@ -6,7 +6,7 @@ export const metadata: Metadata = {
 	description: "Privacy Policy for Invoice Generator.",
 };
 
-export default function PrivacyPolicyPage() {
+export default function PrivacyPage() {
 	return (
 		<main className="min-h-screen px-6 py-10">
 			<section className="mx-auto max-w-3xl rounded-[28px] border border-white/10 bg-[linear-gradient(160deg,rgba(19,29,43,0.92),rgba(12,23,36,0.9))] p-8 text-white shadow-soft sm:p-10">

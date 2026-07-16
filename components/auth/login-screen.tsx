@@ -77,7 +77,7 @@ export function LoginScreen() {
 						</span>
 						<Link
 							className="transition hover:text-white"
-							href="/privacy-policy"
+							href="/privacy"
 						>
 							Privacy Policy
 						</Link>
