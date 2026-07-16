@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
-import { Input } from "@/components/ui/input";
+import { useEffect, useRef } from "react";
 import { DEFAULT_INVOICE_COLOR, isValidInvoiceColor } from "@/lib/branding";
 import { cn } from "@/lib/utils";
 
@@ -53,20 +52,15 @@ export function PickrColorInput({
   value,
   onChange,
   disabled = false,
-  id,
   className
 }: PickrColorInputProps) {
-  const fallbackId = useId();
-  const inputId = id ?? fallbackId;
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const pickrRef = useRef<PickrInstance | null>(null);
   const committedColorRef = useRef(toUpperHex(value));
-  const [draftValue, setDraftValue] = useState(toUpperHex(value));
 
   useEffect(() => {
     const nextValue = toUpperHex(value);
     committedColorRef.current = nextValue;
-    setDraftValue(nextValue);
     pickrRef.current?.setColor(nextValue, true);
   }, [value]);
 
@@ -120,13 +114,11 @@ export function PickrColorInput({
         .on("save", (color: { toHEXA(): { toString(): string } } | null, instance: PickrInstance) => {
           const nextColor = colorFromPickr(color);
           committedColorRef.current = nextColor;
-          setDraftValue(nextColor);
           onChange(nextColor);
           instance.hide();
         })
         .on("cancel", (instance: PickrInstance) => {
           instance.setColor(committedColorRef.current, true);
-          setDraftValue(committedColorRef.current);
           instance.hide();
         });
 
@@ -155,25 +147,10 @@ export function PickrColorInput({
     pickrRef.current?.enable();
   }, [disabled]);
 
-  function commitDraftValue() {
-    const normalized = normalizeInvoiceColor(draftValue);
-
-    if (!isValidInvoiceColor(normalized)) {
-      setDraftValue(committedColorRef.current);
-      return;
-    }
-
-    const nextValue = toUpperHex(normalized);
-    committedColorRef.current = nextValue;
-    setDraftValue(nextValue);
-    pickrRef.current?.setColor(nextValue, true);
-    onChange(nextValue);
-  }
-
-  const previewColor = isValidInvoiceColor(draftValue) ? draftValue : committedColorRef.current;
+  const previewColor = isValidInvoiceColor(value) ? value : committedColorRef.current;
 
   return (
-    <div className={cn("flex flex-wrap items-end gap-4", className)}>
+    <div className={cn("flex flex-wrap items-center gap-4", className)}>
       <button
         aria-label="Choose invoice color"
         className="h-11 w-16 rounded-xl border border-border shadow-soft transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:cursor-not-allowed disabled:opacity-50"
@@ -182,27 +159,9 @@ export function PickrColorInput({
         style={{ backgroundColor: previewColor }}
         type="button"
       />
-      <div className="min-w-36 flex-1 space-y-2">
-        <Input
-          autoCapitalize="characters"
-          autoCorrect="off"
-          disabled={disabled}
-          id={inputId}
-          inputMode="text"
-          maxLength={7}
-          onBlur={commitDraftValue}
-          onChange={(event) => setDraftValue(normalizeInvoiceColor(event.target.value))}
-          onKeyDown={(event) => {
-            if (event.key === "Enter") {
-              event.preventDefault();
-              commitDraftValue();
-            }
-          }}
-          placeholder="#0B6281"
-          spellCheck={false}
-          value={draftValue}
-        />
-        <p className="text-xs text-foreground/60">Pick a color, then click Apply in the picker.</p>
+      <div className="space-y-1">
+        <p className="text-sm text-foreground/72">{previewColor.toUpperCase()}</p>
+        <p className="text-xs text-foreground/60">Open the picker and use its HEX field, then click Apply.</p>
       </div>
     </div>
   );
