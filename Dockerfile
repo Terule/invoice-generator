@@ -6,9 +6,6 @@ FROM node:22-alpine
 # Received from Coolify during the build; npm honors this when installing.
 ARG NODE_ENV
 
-# Install latest Bun for prisma generate, next build, and the app runtime.
-RUN npm install -g bun --quiet
-
 WORKDIR /app
 
 COPY package.json ./
@@ -19,7 +16,7 @@ RUN npm install --include=dev --legacy-peer-deps
 COPY . .
 
 RUN npx prisma generate
-RUN NEXT_TELEMETRY_DISABLED=1 AUTH_SECRET=build-time-secret-please-change-at-runtime-123456 AUTH_URL=https://invoices.terule.dev.br bun run build
+RUN NEXT_TELEMETRY_DISABLED=1 AUTH_SECRET=build-time-secret-please-change-at-runtime-123456 AUTH_URL=https://invoices.terule.dev.br npm run build
 
 EXPOSE 3000
 

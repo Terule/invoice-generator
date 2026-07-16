@@ -15,7 +15,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { createContext, useContext, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { LoginScreen } from "@/components/auth/login-screen";
 import { CompanyOnboardingModal } from "@/components/onboarding/company-onboarding-modal";
 import { Button } from "@/components/ui/button";
@@ -55,6 +55,8 @@ export function DashboardShell({ children }: { children: ReactNode }) {
 	const pathname = usePathname();
 	const queryClient = useQueryClient();
 	const [logoRefreshNonce, setLogoRefreshNonce] = useState(0);
+	const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+	const userMenuRef = useRef<HTMLDivElement | null>(null);
 	const { data: session, isPending: isSessionLoading } =
 		authClient.useSession();
 	const bootstrapQuery = useQuery({
@@ -79,6 +81,32 @@ export function DashboardShell({ children }: { children: ReactNode }) {
 	);
 
 	const isBootstrapLoading = Boolean(session?.user) && bootstrapQuery.isLoading;
+
+	useEffect(() => {
+		function handlePointerDown(event: PointerEvent) {
+			if (!userMenuRef.current) {
+				return;
+			}
+
+			if (!userMenuRef.current.contains(event.target as Node)) {
+				setIsUserMenuOpen(false);
+			}
+		}
+
+		function handleEscape(event: KeyboardEvent) {
+			if (event.key === "Escape") {
+				setIsUserMenuOpen(false);
+			}
+		}
+
+		document.addEventListener("pointerdown", handlePointerDown);
+		document.addEventListener("keydown", handleEscape);
+
+		return () => {
+			document.removeEventListener("pointerdown", handlePointerDown);
+			document.removeEventListener("keydown", handleEscape);
+		};
+	}, []);
 
 	if (isSessionLoading || isBootstrapLoading) {
 		return (
@@ -173,8 +201,14 @@ export function DashboardShell({ children }: { children: ReactNode }) {
 									})}
 						</nav>
 
-						<details className="relative ml-auto xl:ml-0 xl:justify-self-end">
-							<summary className="flex cursor-pointer list-none items-center rounded-full border border-white/10 bg-slate-950/35 p-1 transition hover:border-white/25 [&::-webkit-details-marker]:hidden">
+						<div className="relative ml-auto xl:ml-0 xl:justify-self-end" ref={userMenuRef}>
+							<button
+								aria-expanded={isUserMenuOpen}
+								aria-haspopup="menu"
+								className="flex cursor-pointer list-none items-center rounded-full border border-white/10 bg-slate-950/35 p-1 transition hover:border-white/25"
+								onClick={() => setIsUserMenuOpen((current) => !current)}
+								type="button"
+							>
 								{userImage ? (
 									<Image
 										alt={userName}
@@ -190,41 +224,43 @@ export function DashboardShell({ children }: { children: ReactNode }) {
 										{userInitials || "IG"}
 									</div>
 								)}
-							</summary>
+							</button>
 
-							<div className="absolute right-0 top-[calc(100%+0.7rem)] z-50 w-72 rounded-2xl border border-white/10 bg-slate-950/95 p-4 shadow-soft backdrop-blur">
-								<div className="min-w-0">
-									<div className="flex items-center gap-2">
-										<p className="truncate text-sm font-semibold text-foreground">{userName}</p>
-										{isAdminUser ? (
-											<span className="inline-flex shrink-0 items-center rounded-full border border-emerald-300/35 bg-emerald-500/15 px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.08em] text-emerald-200">
-												Admin
-											</span>
-										) : null}
+							{isUserMenuOpen ? (
+								<div className="absolute right-0 top-[calc(100%+0.7rem)] z-50 w-72 rounded-2xl border border-white/10 bg-slate-950/95 p-4 shadow-soft backdrop-blur">
+									<div className="min-w-0">
+										<div className="flex items-center gap-2">
+											<p className="truncate text-sm font-semibold text-foreground">{userName}</p>
+											{isAdminUser ? (
+												<span className="inline-flex shrink-0 items-center rounded-full border border-emerald-300/35 bg-emerald-500/15 px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.08em] text-emerald-200">
+													Admin
+												</span>
+											) : null}
+										</div>
+										{userEmail ? <p className="truncate text-xs text-foreground/62">{userEmail}</p> : null}
 									</div>
-									{userEmail ? <p className="truncate text-xs text-foreground/62">{userEmail}</p> : null}
-								</div>
-								<div className="mt-4 border-t border-white/10 pt-3">
-									<Button
-										aria-label="Logout"
-										className="w-full items-center gap-2 justify-start rounded-xl px-3 py-2 text-sm"
-										onClick={() =>
-											authClient.signOut({
-												fetchOptions: {
-													onSuccess: () => {
-														window.location.href = "/";
+									<div className="mt-4 border-t border-white/10 pt-3">
+										<Button
+											aria-label="Logout"
+											className="w-full items-center gap-2 justify-start rounded-xl px-3 py-2 text-sm"
+											onClick={() =>
+												authClient.signOut({
+													fetchOptions: {
+														onSuccess: () => {
+															window.location.href = "/";
+														},
 													},
-												},
-											})
-										}
-										variant="ghost"
-									>
-										<LogOut className="h-4 w-4" />
-										<span>Logout</span>
-									</Button>
+												})
+											}
+											variant="ghost"
+										>
+											<LogOut className="h-4 w-4" />
+											<span>Logout</span>
+										</Button>
+									</div>
 								</div>
-							</div>
-						</details>
+							) : null}
+						</div>
 					</div>
 				</Card>
 

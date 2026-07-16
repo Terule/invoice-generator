@@ -5,6 +5,17 @@ import { useEffect, useState } from "react";
 
 import { SectionHeader } from "@/components/shared/section-header";
 import { useDashboardData } from "@/components/shell/dashboard-shell";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/formatters";
@@ -28,11 +39,7 @@ export function InvoicesPageContent() {
     }
   }, []);
 
-  async function handleDelete(invoiceId: string, invoiceNumber: string) {
-    if (!window.confirm(`Delete ${invoiceNumber}? This cannot be undone.`)) {
-      return;
-    }
-
+  async function handleDelete(invoiceId: string) {
     setActionError("");
     const response = await fetch(`/api/invoices/${invoiceId}`, { method: "DELETE" });
 
@@ -124,7 +131,15 @@ export function InvoicesPageContent() {
   );
 }
 
-function InvoiceActions({ invoiceId, invoiceNumber, onDelete }: { invoiceId: string; invoiceNumber: string; onDelete: (invoiceId: string, invoiceNumber: string) => void }) {
+function InvoiceActions({
+  invoiceId,
+  invoiceNumber,
+  onDelete,
+}: {
+  invoiceId: string;
+  invoiceNumber: string;
+  onDelete: (invoiceId: string) => void;
+}) {
   return (
     <div className="flex shrink-0 items-center gap-1">
       <a
@@ -135,16 +150,39 @@ function InvoiceActions({ invoiceId, invoiceNumber, onDelete }: { invoiceId: str
       >
         <Download className="h-3.5 w-3.5" />
       </a>
-      <Button
-        aria-label={`Delete ${invoiceNumber}`}
-        className="h-8 w-8 px-0 text-rose-300 hover:text-rose-200"
-        onClick={() => onDelete(invoiceId, invoiceNumber)}
-        title="Delete invoice"
-        type="button"
-        variant="ghost"
-      >
-        <Trash2 className="h-3.5 w-3.5" />
-      </Button>
+      <AlertDialog>
+        <AlertDialogTrigger asChild>
+          <Button
+            aria-label={`Delete ${invoiceNumber}`}
+            className="h-8 w-8 px-0 text-rose-300 hover:text-rose-200"
+            title="Delete invoice"
+            type="button"
+            variant="ghost"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete invoice {invoiceNumber}?</AlertDialogTitle>
+            <AlertDialogDescription className="text-sm text-foreground/70">
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel asChild>
+              <Button type="button" variant="outline">
+                Cancel
+              </Button>
+            </AlertDialogCancel>
+            <AlertDialogAction asChild>
+              <Button onClick={() => onDelete(invoiceId)} type="button" variant="destructive">
+                Delete
+              </Button>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

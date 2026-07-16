@@ -8,7 +8,7 @@ Starter app for generating invoices for international clients with:
 - TanStack Query
 - Better auth foundation with Google login via Auth.js
 - Prisma + MySQL
-- Bun runtime and package manager
+- npm package manager
 - Docker Compose with separate `app` and `mysql` services
 
 ## Quick start
@@ -18,7 +18,7 @@ Starter app for generating invoices for international clients with:
 3. Install dependencies locally if you want to run it outside Docker:
 
 ```bash
-bun install
+npm install
 ```
 
 4. Start the stack:
@@ -30,7 +30,7 @@ docker compose up --build
 5. In another shell, run the Prisma sync once the database is healthy:
 
 ```bash
-docker compose exec app bunx prisma db push
+docker compose exec app npx prisma db push
 ```
 
 6. Open `http://localhost:3000`.
@@ -73,14 +73,14 @@ Before deploying to production:
 5. Run dependency auditing before release:
 
 ```bash
-bun audit
+npm audit
 ```
 
 6. Run static checks before release:
 
 ```bash
-bun run lint
-bun run check
+npm run lint
+npm run check
 ```
 
 7. Confirm observability and incident response:

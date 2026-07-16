@@ -12,7 +12,7 @@ npx prisma generate
 
 if [ "$NODE_ENV" = "production" ]; then
 	npx prisma migrate deploy
-	exec bun run start
+	exec npm run start
 fi
 
-exec bun run dev
+exec npm run dev

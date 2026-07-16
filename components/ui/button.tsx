@@ -3,7 +3,7 @@ import type * as React from "react";
 import { cn } from "@/lib/utils";
 
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: "default" | "outline" | "ghost";
+  variant?: "default" | "outline" | "ghost" | "destructive";
 };
 
 export function Button({
@@ -21,6 +21,8 @@ export function Button({
         variant === "outline" &&
           "border border-border bg-card text-foreground hover:-translate-y-0.5 hover:bg-secondary",
         variant === "ghost" && "text-foreground hover:-translate-y-0.5 hover:bg-secondary",
+        variant === "destructive" &&
+          "bg-rose-500/85 text-rose-50 shadow-soft hover:-translate-y-0.5 hover:bg-rose-500",
         className
       )}
       type={type}

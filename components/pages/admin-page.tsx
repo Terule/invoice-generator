@@ -6,6 +6,17 @@ import { useState } from "react";
 
 import { SectionHeader } from "@/components/shared/section-header";
 import { useDashboardData } from "@/components/shell/dashboard-shell";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+	AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { authClient } from "@/lib/auth-client";
@@ -74,19 +85,11 @@ export function AdminPageContent() {
 	});
 	const users = usersQuery.data ?? [];
 
-	async function handleReset(user: AdminUser) {
-		if (
-			!window.confirm(
-				`Reset ${user.email}? This clears company profile, contractors, invoices and stored files. The user will need onboarding again.`,
-			)
-		) {
-			return;
-		}
-
+	async function handleReset(userId: string) {
 		setActionError("");
 
 		try {
-			await resetMutation.mutateAsync(user.id);
+			await resetMutation.mutateAsync(userId);
 		} catch (error) {
 			setActionError(
 				error instanceof Error ? error.message : "Unable to reset this account.",
@@ -162,21 +165,44 @@ export function AdminPageContent() {
 											Onboarding: {user.hasCompanyProfile ? "completed" : "pending"} · Contractors: {user.contractorCount} · Invoices: {user.invoiceCount}
 										</p>
 									</div>
-									<Button
-										aria-label={`Reset account for ${user.email}`}
-										className="border-rose-400/40 text-rose-200 hover:border-rose-300/70 hover:bg-rose-500/20"
-										disabled={isResetting}
-										onClick={() => handleReset(user)}
-										title="Reset account"
-										type="button"
-										variant="outline"
-									>
-										{isResetting ? (
-											<Loader2 className="h-4 w-4 animate-spin" />
-										) : (
-											<RotateCcw className="h-4 w-4" />
-										)}
-									</Button>
+									<AlertDialog>
+										<AlertDialogTrigger asChild>
+											<Button
+												aria-label={`Reset account for ${user.email}`}
+												className="border-rose-400/40 text-rose-200 hover:border-rose-300/70 hover:bg-rose-500/20"
+												disabled={isResetting}
+												title="Reset account"
+												type="button"
+												variant="outline"
+											>
+												{isResetting ? (
+													<Loader2 className="h-4 w-4 animate-spin" />
+												) : (
+													<RotateCcw className="h-4 w-4" />
+												)}
+											</Button>
+										</AlertDialogTrigger>
+										<AlertDialogContent>
+											<AlertDialogHeader>
+												<AlertDialogTitle>Reset {user.email}?</AlertDialogTitle>
+												<AlertDialogDescription className="text-sm text-foreground/70">
+													This clears company profile, contractors, invoices, and stored files. The user will need onboarding again.
+												</AlertDialogDescription>
+											</AlertDialogHeader>
+											<AlertDialogFooter>
+												<AlertDialogCancel asChild>
+													<Button type="button" variant="outline">
+														Cancel
+													</Button>
+												</AlertDialogCancel>
+												<AlertDialogAction asChild>
+													<Button onClick={() => handleReset(user.id)} type="button" variant="destructive">
+														Reset account
+													</Button>
+												</AlertDialogAction>
+											</AlertDialogFooter>
+										</AlertDialogContent>
+									</AlertDialog>
 								</div>
 							</Card>
 						);
