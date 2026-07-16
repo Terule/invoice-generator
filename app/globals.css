@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "@simonwep/pickr/dist/themes/monolith.min.css";
 
 @theme {
 	/* Font families — Next.js sets --font-roboto and --font-inter on <body> */
@@ -132,6 +133,37 @@ a {
 
 .invoice-paper {
 	zoom: 0.58;
+}
+
+.invoice-color-pickr.pcr-app {
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	border-radius: 1rem;
+	background: rgba(9, 16, 24, 0.96);
+	box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+	backdrop-filter: blur(16px);
+}
+
+.invoice-color-pickr .pcr-interaction input {
+	border-radius: 0.75rem;
+	border-color: rgba(255, 255, 255, 0.1);
+	background: rgba(255, 255, 255, 0.06);
+	color: #f0ece2;
+}
+
+.invoice-color-pickr .pcr-interaction .pcr-save,
+.invoice-color-pickr .pcr-interaction .pcr-cancel {
+	border-radius: 9999px;
+	font-weight: 600;
+}
+
+.invoice-color-pickr .pcr-interaction .pcr-save {
+	background: hsl(154 51% 46%);
+	color: hsl(220 30% 10%);
+}
+
+.invoice-color-pickr .pcr-interaction .pcr-cancel {
+	background: rgba(255, 255, 255, 0.08);
+	color: #f0ece2;
 }
 
 @media (min-width: 640px) {

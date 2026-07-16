@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PickrColorInput } from "@/components/ui/pickr-color-input";
 import {
   DEFAULT_INVOICE_COLOR,
   isAcceptedLogo,
@@ -59,26 +60,6 @@ function brandingFormFromCompany(company: ReturnType<typeof useDashboardData>["b
     invoiceColor: company?.invoiceColor ?? DEFAULT_INVOICE_COLOR,
     logoPath: company?.logoPath ?? null
   };
-}
-
-const INVOICE_COLOR_PRESETS = [
-  DEFAULT_INVOICE_COLOR,
-  "#0F766E",
-  "#1D4ED8",
-  "#B45309",
-  "#BE123C",
-  "#6D28D9"
-];
-
-function normalizeInvoiceColor(value: string) {
-  const trimmed = value.trim();
-
-  if (!trimmed) {
-    return "#";
-  }
-
-  const normalized = trimmed.startsWith("#") ? trimmed : `#${trimmed}`;
-  return normalized.slice(0, 7).toUpperCase();
 }
 
 async function isSquareLogo(file: File) {
@@ -422,51 +403,14 @@ export function CompanyPageContent() {
 
             <div className="space-y-3">
               <Label htmlFor="invoice-color">Invoice color</Label>
-              <div className="flex flex-wrap items-end gap-4">
-                <div
-                  aria-hidden="true"
-                  className="h-11 w-16 rounded-xl border border-border shadow-soft"
-                  style={{ backgroundColor: isValidInvoiceColor(brandingForm.invoiceColor) ? brandingForm.invoiceColor : DEFAULT_INVOICE_COLOR }}
-                />
-                <div className="min-w-36 space-y-2">
-                  <Input
-                    autoCapitalize="characters"
-                    autoCorrect="off"
-                    id="invoice-color"
-                    inputMode="text"
-                    maxLength={7}
-                    onChange={(event) =>
-                      setBrandingForm((current) => ({
-                        ...current,
-                        invoiceColor: normalizeInvoiceColor(event.target.value)
-                      }))
-                    }
-                    placeholder="#0B6281"
-                    spellCheck={false}
-                    value={brandingForm.invoiceColor.toUpperCase()}
-                  />
-                  <p className="text-xs text-foreground/60">Use a HEX color like #0B6281.</p>
-                </div>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {INVOICE_COLOR_PRESETS.map((color) => {
-                  const isSelected = brandingForm.invoiceColor.toUpperCase() === color.toUpperCase();
-
-                  return (
-                    <button
-                      aria-label={`Select invoice color ${color}`}
-                      className={`h-8 w-8 rounded-full border transition hover:scale-105 ${isSelected ? "border-white ring-2 ring-white/70 ring-offset-2 ring-offset-background" : "border-white/15"}`}
-                      key={color}
-                      onClick={() => {
-                        setBrandingError("");
-                        setBrandingForm((current) => ({ ...current, invoiceColor: color.toUpperCase() }));
-                      }}
-                      style={{ backgroundColor: color }}
-                      type="button"
-                    />
-                  );
-                })}
-              </div>
+              <PickrColorInput
+                id="invoice-color"
+                onChange={(nextColor) => {
+                  setBrandingError("");
+                  setBrandingForm((current) => ({ ...current, invoiceColor: nextColor }));
+                }}
+                value={brandingForm.invoiceColor.toUpperCase()}
+              />
             </div>
 
             <Button disabled={updateBrandingMutation.isPending} type="submit">
