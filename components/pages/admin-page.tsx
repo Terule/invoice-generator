@@ -134,7 +134,7 @@ export function AdminPageContent() {
 				</p>
 			</Card>
 
-			<div className="grid gap-4">
+			<div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
 				{users.length ? (
 					users.map((user) => {
 						const isResetting =
@@ -145,7 +145,7 @@ export function AdminPageContent() {
 								user.email.trim().toLowerCase();
 
 						return (
-							<Card className="animate-fade-in-up" key={user.id}>
+							<Card className="animate-fade-in-up h-full" key={user.id}>
 								<div className="flex flex-wrap items-start justify-between gap-4">
 									<div>
 										<p className="inline-flex items-center gap-2 text-lg font-semibold">
