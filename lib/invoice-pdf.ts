@@ -1,3 +1,5 @@
+import { getInvoiceBrandingTones } from "@/lib/branding";
+
 type InvoicePdfItem = {
 	description: string;
 	quantity: number;
@@ -24,8 +26,6 @@ const teal = "0.043 0.384 0.506";
 const navy = "0.06 0.09 0.16";
 const slate = "0.28 0.36 0.48";
 const border = "0.88 0.91 0.94";
-const paleBlue = "0.86 0.93 0.95";
-const totalBlue = "0.945 0.973 0.98";
 const helveticaWidths: Record<string, number> = {
 	" ": 278,
 	"-": 333,
@@ -263,7 +263,13 @@ export async function createInvoicePdf(data: InvoicePdfData) {
 	const taxId = asString(data.company.taxId);
 	const companyId = asString(data.contractor.companyIdentifier);
 	const recipientTaxId = asString(data.contractor.taxId);
-	const accent = pdfColorFromHex(asString(data.company.invoiceColor));
+	const brandingTones = getInvoiceBrandingTones(asString(data.company.invoiceColor));
+	const accent = pdfColorFromHex(brandingTones.accent);
+	const tableHeaderBackground = pdfColorFromHex(brandingTones.tableHeaderBackground);
+	const tableHeaderText = pdfColorFromHex(brandingTones.tableHeaderText);
+	const subtotalBackground = pdfColorFromHex(brandingTones.subtotalBackground);
+	const subtotalBorder = pdfColorFromHex(brandingTones.subtotalBorder);
+	const subtotalText = pdfColorFromHex(brandingTones.subtotalText);
 	const paymentLines = [
 		["Beneficiary", asString(data.company.paymentBeneficiary)],
 		["Bank", asString(data.company.paymentBankName)],
@@ -338,11 +344,11 @@ export async function createInvoicePdf(data: InvoicePdfData) {
 	const tableLeft = 32;
 	const tableRight = 563;
 	const tableTop = 516;
-	fillRoundedTopRect(commands, tableLeft, tableTop - 29, tableRight - tableLeft, 29, 7, paleBlue);
-	text(commands, "DESCRIPTION OF SERVICES", 44, tableTop - 18, 8, true, "left", "0.09 0.27 0.35");
-	text(commands, "QTY", 319, tableTop - 18, 8, true, "center", "0.09 0.27 0.35");
-	text(commands, "RATE", 392, tableTop - 18, 8, true, "center", "0.09 0.27 0.35");
-	text(commands, "AMOUNT", 498, tableTop - 18, 8, true, "center", "0.09 0.27 0.35");
+	fillRoundedTopRect(commands, tableLeft, tableTop - 29, tableRight - tableLeft, 29, 7, tableHeaderBackground);
+	text(commands, "DESCRIPTION OF SERVICES", 44, tableTop - 18, 8, true, "left", tableHeaderText);
+	text(commands, "QTY", 319, tableTop - 18, 8, true, "center", tableHeaderText);
+	text(commands, "RATE", 392, tableTop - 18, 8, true, "center", tableHeaderText);
+	text(commands, "AMOUNT", 498, tableTop - 18, 8, true, "center", tableHeaderText);
 
 	let rowY = tableTop - 29;
 	items.forEach((item, index) => {
@@ -364,11 +370,11 @@ export async function createInvoicePdf(data: InvoicePdfData) {
 
 	const totalLeft = 338;
 	const totalBottom = rowY - 76;
-	fillRoundedRect(commands, totalLeft, totalBottom, 225, 51, 7, totalBlue);
-	strokeRoundedRect(commands, totalLeft, totalBottom, 225, 51, 7, "0.73 0.83 0.87");
+	fillRoundedRect(commands, totalLeft, totalBottom, 225, 51, 7, subtotalBackground);
+	strokeRoundedRect(commands, totalLeft, totalBottom, 225, 51, 7, subtotalBorder);
 	fillRoundedBottomRect(commands, totalLeft, totalBottom, 225, 26, 7, accent);
-	text(commands, "Subtotal", totalLeft + 12, totalBottom + 35, 9, false, "left", slate);
-	text(commands, formatMoney(data.totalCents, data.currency), 551, totalBottom + 35, 9, false, "right", slate);
+	text(commands, "Subtotal", totalLeft + 12, totalBottom + 35, 9, false, "left", subtotalText);
+	text(commands, formatMoney(data.totalCents, data.currency), 551, totalBottom + 35, 9, false, "right", subtotalText);
 	text(commands, "Total due", totalLeft + 12, totalBottom + 10, 10, true, "left", "1 1 1");
 	text(commands, formatMoney(data.totalCents, data.currency), 551, totalBottom + 10, 10, true, "right", "1 1 1");
 

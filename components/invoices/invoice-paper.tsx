@@ -1,5 +1,6 @@
 import Image from "next/image";
 
+import { getInvoiceBrandingTones } from "@/lib/branding";
 import { formatCurrency } from "@/lib/formatters";
 
 type InvoicePaperProps = {
@@ -68,6 +69,7 @@ export function InvoicePaper({
   notes
 }: InvoicePaperProps) {
   const invoiceColor = sender?.invoiceColor || "#0b6281";
+  const brandingTones = getInvoiceBrandingTones(invoiceColor);
   const companyName = sender?.tradingName || sender?.legalName || "Your company";
   const isTwoLineCompanyName = companyName.length > 24;
 
@@ -118,11 +120,17 @@ export function InvoicePaper({
       </section>
 
       <section className="px-8">
-        <div className="grid grid-cols-[minmax(0,1fr)_38px_92px_106px] gap-2 rounded-t-lg bg-[#dcecf2] px-3 py-2 text-[9px] font-bold uppercase tracking-[0.09em] text-[#17445a]">
-          <span>Description of services</span>
-          <span className="text-right">Qty</span>
-          <span className="text-right">Rate</span>
-          <span className="text-right">Amount</span>
+        <div
+          className="grid grid-cols-[minmax(0,1fr)_38px_92px_106px] gap-2 rounded-t-lg px-3 py-2 text-[9px] font-bold uppercase tracking-[0.09em]"
+          style={{
+            backgroundColor: brandingTones.tableHeaderBackground,
+            color: brandingTones.tableHeaderText
+          }}
+        >
+          <span style={{ color: brandingTones.tableHeaderText }}>Description of services</span>
+          <span className="text-right" style={{ color: brandingTones.tableHeaderText }}>Qty</span>
+          <span className="text-right" style={{ color: brandingTones.tableHeaderText }}>Rate</span>
+          <span className="text-right" style={{ color: brandingTones.tableHeaderText }}>Amount</span>
         </div>
         <div className="overflow-hidden rounded-b-lg border border-t-0 border-slate-200">
           {items.map((item, index) => {
@@ -142,8 +150,14 @@ export function InvoicePaper({
           })}
         </div>
 
-        <div className="ml-auto mt-3 w-56.25 overflow-hidden rounded-lg border border-[#b9d4de]">
-          <div className="flex items-center justify-between bg-[#f1f8fa] px-3 py-2 text-[10px] text-slate-600">
+        <div className="ml-auto mt-3 w-56.25 overflow-hidden rounded-lg border" style={{ borderColor: brandingTones.subtotalBorder }}>
+          <div
+            className="flex items-center justify-between px-3 py-2 text-[10px]"
+            style={{
+              backgroundColor: brandingTones.subtotalBackground,
+              color: brandingTones.subtotalText
+            }}
+          >
             <span>Subtotal</span>
             <span>{formatCurrency(totalCents, currency)}</span>
           </div>
