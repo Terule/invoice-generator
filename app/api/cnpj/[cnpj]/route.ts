@@ -7,6 +7,91 @@ import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 const LOOKUP_WINDOW_MS = 60 * 1000;
 const LOOKUP_MAX_REQUESTS = 30;
 
+const openCnpjCountryCodeMap: Record<string, string> = {
+	"76": "BR",
+	"105": "BR",
+	"076": "BR",
+	"1058": "BR",
+	BRASIL: "BR",
+	BRAZIL: "BR",
+	BRA: "BR",
+	BR: "BR",
+};
+
+type OpenCnpjCountry =
+	| string
+	| {
+			codigo?: string | number;
+			descricao?: string;
+	  }
+	| null
+	| undefined;
+
+function toCountryAbbreviation(value: unknown) {
+	if (typeof value !== "string" && typeof value !== "number") {
+		return null;
+	}
+
+	const raw = String(value).trim().toUpperCase();
+
+	if (!raw) {
+		return null;
+	}
+
+	if (/^[A-Z]{2}$/.test(raw)) {
+		return raw;
+	}
+
+	if (openCnpjCountryCodeMap[raw]) {
+		return openCnpjCountryCodeMap[raw];
+	}
+
+	if (/^\d+$/.test(raw)) {
+		const normalized = String(Number(raw));
+		const padded = normalized.padStart(3, "0");
+
+		return (
+			openCnpjCountryCodeMap[normalized] ??
+			openCnpjCountryCodeMap[padded] ??
+			null
+		);
+	}
+
+	return null;
+}
+
+function resolveCountryFromPayload(payload: {
+	pais?: OpenCnpjCountry;
+	codigo_pais?: string | number;
+}) {
+	const countryCode =
+		toCountryAbbreviation(payload.codigo_pais) ??
+		toCountryAbbreviation(
+			typeof payload.pais === "object" && payload.pais !== null
+				? payload.pais.codigo
+				: payload.pais,
+		);
+
+	if (countryCode) {
+		return countryCode;
+	}
+
+	if (
+		typeof payload.pais === "object" &&
+		payload.pais !== null &&
+		typeof payload.pais.descricao === "string" &&
+		payload.pais.descricao.trim()
+	) {
+		return toCountryAbbreviation(payload.pais.descricao) ?? "BR";
+	}
+
+	if (typeof payload.pais === "string" && payload.pais.trim()) {
+		return toCountryAbbreviation(payload.pais) ?? "BR";
+	}
+
+	return "BR";
+}
+
 	export async function GET(
 	request: Request,
 	context: { params: Promise<{ cnpj: string }> },
@@ -78,6 +163,6 @@ const LOOKUP_MAX_REQUESTS = 30;
 		neighborhood: payload.bairro,
 		city: payload.municipio,
 		state: payload.uf,
-		country: payload.pais || "Brazil",
+		country: resolveCountryFromPayload(payload),
 	});
 }
